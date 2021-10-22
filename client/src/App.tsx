@@ -26,6 +26,7 @@ class App extends Component {
 
   render() {
     const { data } = this.state;
+    console.log('HELLO WORLD!');
     return (
       <div className="App">
         <header className="App-header">

@@ -15,6 +15,7 @@ app.listen(port, () => {
 
 // For the react app to hit.
 app.get('/express_backend', (req: any, res: any) => {
+  console.log('hello babie!');
   res.send({
     express: 'Hello world from express',
   });
