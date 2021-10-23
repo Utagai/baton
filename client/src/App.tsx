@@ -4,7 +4,7 @@ import './App.css';
 
 class App extends Component {
   state = {
-    data: null,
+    data: [],
   };
 
   componentDidMount() {
@@ -27,13 +27,14 @@ class App extends Component {
   render() {
     const { data } = this.state;
     console.log('HELLO WORLD!');
+    const listItems = data.map((str: string) => <li>{str}</li>);
     return (
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">Welcome to Rect</h1>
         </header>
-        <p className="App-intro">{data}</p>
+        <ul className="App-intro">{listItems}</ul>
       </div>
     );
   }

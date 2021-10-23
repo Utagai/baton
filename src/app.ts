@@ -1,4 +1,4 @@
-const express = require('express');
+import express from 'express';
 
 const app = express();
 const port = 8080; // default port to listen
@@ -17,6 +17,6 @@ app.listen(port, () => {
 app.get('/express_backend', (req: any, res: any) => {
   console.log('hello babie!');
   res.send({
-    express: 'Hello world from express',
+    express: ['hello', 'world', 'from', 'express'],
   });
 });
