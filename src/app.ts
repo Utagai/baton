@@ -4,7 +4,7 @@ const app = express();
 const port = 8080; // default port to listen
 
 // define a route handler for the default home page
-app.get('/', (_: any, res: any) => {
+app.get('/', (_: express.Request, res: express.Response) => {
   res.send('Hello world!');
 });
 
@@ -14,7 +14,7 @@ app.listen(port, () => {
 });
 
 // For the react app to hit.
-app.get('/express_backend', (_: any, res: any) => {
+app.get('/express_backend', (_: express.Request, res: express.Response) => {
   console.log('hello babie!');
   res.send({
     express: ['hello', 'world', 'from', 'express'],
