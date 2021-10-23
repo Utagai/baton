@@ -40,5 +40,6 @@ module.exports = {
         tsx: 'never',
       },
     ],
+    'object-curly-newline': 'off',
   },
 };
