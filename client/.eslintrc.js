@@ -41,5 +41,15 @@ module.exports = {
       },
     ],
     'object-curly-newline': 'off',
+    'no-unused-vars': 'warn',
+    'operator-linebreak': [
+      'error',
+      'after',
+      {
+        overrides: {
+          '+': 'after',
+        },
+      },
+    ],
   },
 };
