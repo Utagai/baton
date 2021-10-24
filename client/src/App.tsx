@@ -2,6 +2,7 @@ import React from 'react';
 // import logo from './logo.svg';
 import './index.css';
 import './App.css';
+import debounce from 'lodash.debounce';
 
 async function callBackendAPI() {
   const response = await fetch('/express_backend');
@@ -16,10 +17,22 @@ async function callBackendAPI() {
 const App = () => {
   const [data, setData] = React.useState([]);
 
+  const debouncedCall = React.useCallback(
+    debounce(callBackendAPI, 250, { leading: true }),
+    [],
+  );
+
   React.useEffect(() => {
-    console.log('Effect called!');
-    callBackendAPI()
-      .then((res) => setData(res.express))
+    const resp = debouncedCall();
+    while (resp === undefined) {
+      throw Error('TODO');
+    }
+    resp
+      .then((res) => {
+        if (res !== undefined) {
+          setData(res.express);
+        }
+      })
       .catch((err) => console.log(err));
   });
 
