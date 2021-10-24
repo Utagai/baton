@@ -19,6 +19,16 @@ module.exports = {
   plugins: ['@typescript-eslint', 'prettier'],
   ignorePatterns: ['/dist/', '*.json'],
   rules: {
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      {
+        js: 'never',
+        jsx: 'never',
+        ts: 'never',
+        tsx: 'never',
+      },
+    ],
     'no-console': 0,
   },
 };
