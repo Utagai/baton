@@ -1,8 +1,8 @@
 import React from 'react';
-// import logo from './logo.svg';
 import './index.css';
 import './App.css';
 import debounce from 'lodash.debounce';
+import FileRow from './FileRow';
 
 async function callBackendAPI() {
   const response = await fetch('/express_backend');
@@ -44,34 +44,12 @@ function FileRows() {
     expireTime: string;
   };
   const rows = data.map((f: file) => (
-    <tr className="border-b hover:shadow-md">
-      <th className="font-normal p-1 text-left px-10">
-        <div className="font-bold font-mono">{f.filename}</div>
-        <div className="text-xs italic">({f.filesize})</div>
-      </th>
-      <th className="font-normal border-b text-left  px-10">
-        <div className="italic">{f.uploadTime}</div>
-      </th>
-      <th className="font-normal border-b text-left px-10">
-        <div className="italic">{f.expireTime}</div>
-      </th>
-      <th className="font-normal border-b">
-        <button
-          aria-label="Download"
-          type="button"
-          className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-gray-500 hover:text-blue-100"
-        >
-          Download
-        </button>
-        <button
-          aria-label="Download"
-          type="button"
-          className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-red-500 hover:text-blue-100"
-        >
-          Delete
-        </button>
-      </th>
-    </tr>
+    <FileRow
+      filename={f.filename}
+      filesize={f.filesize}
+      uploadTime={f.uploadTime}
+      expireTime={f.expireTime}
+    />
   ));
 
   return <tbody>{rows}</tbody>;
