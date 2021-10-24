@@ -71,7 +71,7 @@ class App extends Component {
           <h1 className="inline-block italic font-extralight">baton</h1>
           <span className="">🪄</span>
         </div>
-        <div className="inline-block min-w-full border-4 border-gray-200 rounded-sm ml-10 mr-10">
+        <div className="inline-block min-w-full border-4 border-gray-200 rounded-sm mx-10">
           <table className="min-w-full mx-auto rounded-md bg-gray-50 text-gray-700">
             <thead className="">
               <tr className="border-2 border-b-gray-500">
