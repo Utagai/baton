@@ -8,6 +8,7 @@ module.exports = {
   extends: [
     'plugin:react/recommended',
     'airbnb',
+    'prettier',
     'plugin:import/errors',
     'plugin:import/warnings',
     'plugin:import/typescript',
@@ -52,5 +53,6 @@ module.exports = {
       },
     ],
     'react/jsx-one-expression-per-line': 'off',
+    'no-continue': 'off',
   },
 };
