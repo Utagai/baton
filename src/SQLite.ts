@@ -4,7 +4,7 @@ import uploadedFile from './types';
 
 const db = sqlite('./sqlite/baton_dev.db');
 
-export function getFileListing(): uploadedFile[] {
+export function getFiles(): uploadedFile[] {
   return db.prepare('SELECT * FROM files').all();
 }
 

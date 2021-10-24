@@ -1,6 +1,6 @@
 import express from 'express';
 import fileUpload from 'express-fileupload';
-import { addFile } from './SQLite';
+import { addFile, getFiles } from './SQLite';
 import uploadedFile from './types';
 
 const app = express();
@@ -22,27 +22,9 @@ app.listen(port, () => {
 // For the react app to hit.
 app.get('/express_backend', (_, res) => {
   console.log('hello babie!');
+  const files = getFiles();
   res.send({
-    express: [
-      {
-        filename: 'pretty.jpg',
-        filesize: '7 MB',
-        uploadTime: 'October 23, 9:23 PM',
-        expireTime: '18 hours',
-      },
-      {
-        filename: 'data.json',
-        filesize: '1.2 GB',
-        uploadTime: 'October 23, 9:23 PM',
-        expireTime: '6 hours',
-      },
-      {
-        filename: 'article_link.txt',
-        filesize: '53 B',
-        uploadTime: 'October 22, 1:44 AM',
-        expireTime: '12 minutes',
-      },
-    ],
+    express: files,
   });
 });
 
