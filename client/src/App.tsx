@@ -1,5 +1,6 @@
 import './index.css';
 import FileRows from './FileRows';
+import TableHeader from './TableHeader';
 
 const App = () => (
   <div className="grid place-items-center">
@@ -9,23 +10,7 @@ const App = () => (
     </div>
     <div className="w-1/2 border-4 border-gray-200 rounded-sm mx-10">
       <table className="min-w-full mx-auto rounded-md bg-gray-50 text-gray-700">
-        <thead className="">
-          <tr className="border-2 border-b-gray-500">
-            <th className="bg-gray-200 text-gray-500 text-xs text-left px-10 uppercase tracking-wider py-2">
-              File
-            </th>
-            <th className="bg-gray-200 text-gray-500 text-xs text-left px-10 uppercase tracking-wider py-2">
-              Uploaded At
-            </th>
-            <th className="bg-gray-200 text-gray-500 text-xs text-left px-10 uppercase tracking-wider py-2">
-              Expires In
-            </th>
-            <th
-              aria-label="Empty column for formatting"
-              className="bg-gray-200 text-gray-500 text-xs text-left px-10 uppercase tracking-wider py-2"
-            />
-          </tr>
-        </thead>
+        <TableHeader />
 
         <FileRows />
       </table>
