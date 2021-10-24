@@ -1,5 +1,4 @@
 import './index.css';
-import './App.css';
 import file from './types';
 
 function FileRow(f: file) {

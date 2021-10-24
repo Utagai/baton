@@ -1,6 +1,5 @@
 import React from 'react';
 import './index.css';
-import './App.css';
 import debounce from 'lodash.debounce';
 import FileRow from './FileRow';
 
