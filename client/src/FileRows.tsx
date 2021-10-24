@@ -4,7 +4,7 @@ import debounce from 'lodash.debounce';
 import FileRow from './FileRow';
 
 async function callBackendAPI() {
-  const response = await fetch('/express_backend');
+  const response = await fetch('/files');
   const body = await response.json();
 
   if (response.status !== 200) {
@@ -29,7 +29,7 @@ function FileRows() {
     resp
       .then((res) => {
         if (res !== undefined) {
-          setData(res.express);
+          setData(res.files);
         }
       })
       .catch((err) => console.log(err));

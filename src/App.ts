@@ -20,11 +20,11 @@ app.listen(port, () => {
 });
 
 // For the react app to hit.
-app.get('/express_backend', (_, res) => {
+app.get('/files', (_, res) => {
   console.log('hello babie!');
   const files = getFiles();
   res.send({
-    express: files,
+    files: files,
   });
 });
 
