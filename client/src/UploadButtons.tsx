@@ -1,8 +1,13 @@
 import React, { useRef } from 'react';
-import './index.css';
 import { v4 as uuidv4 } from 'uuid';
 
-function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
+import './index.css';
+import file from './types';
+
+function handleUpload(
+  event: React.ChangeEvent<HTMLInputElement>,
+  addFile: (f: file) => void,
+) {
   const {
     currentTarget: { files },
   } = event;
@@ -16,18 +21,18 @@ function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
 
   const uploadRequests = [];
   for (let i = 0; i < files.length; i += 1) {
-    const file = files.item(i);
-    if (file === null) {
+    const f = files.item(i);
+    if (f === null) {
       console.log('skipping file...');
       // Nothing else we can do.
       continue;
     }
 
     const formData = new FormData();
-    formData.append('filename', file.name);
-    formData.append('filesize', file.size.toString());
+    formData.append('filename', f.name);
+    formData.append('filesize', f.size.toString());
     formData.append('id', uuidv4());
-    formData.append('file', file);
+    formData.append('file', f);
     uploadRequests.push(
       fetch('/upload', {
         method: 'POST',
@@ -38,11 +43,18 @@ function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
 
   console.log('upload reqs: ', uploadRequests);
   Promise.all(uploadRequests)
-    .then((resp) => console.log('all reqs res: ', resp[0].json()))
+    .then((responses) => {
+      responses.forEach(async (resp) => {
+        const f = await resp.json();
+        console.log('req res: ', f);
+        addFile(f);
+      });
+    })
     .catch((err) => console.log('err from upload: ', err));
 }
 
-function UploadButtons() {
+function UploadButtons(props: { addFile: (f: file) => void }) {
+  const { addFile } = props;
   const fileUploadInputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -71,7 +83,9 @@ function UploadButtons() {
             className="hidden"
             type="file"
             ref={fileUploadInputRef}
-            onChange={handleUpload}
+            onChange={(e) => {
+              handleUpload(e, addFile);
+            }}
             multiple
           />
         </span>

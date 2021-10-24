@@ -17,7 +17,7 @@ export function addFile(f: uploadedFile): number {
     id: f.id,
     filename: f.filename,
     filesize: f.filesize,
-    uploadTime: f.uploadTime,
-    expireTime: f.expireTime,
+    uploadTime: f.uploadTime.toISOString(),
+    expireTime: f.expireTime.toISOString(),
   }).changes;
 }

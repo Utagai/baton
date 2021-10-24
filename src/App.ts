@@ -33,7 +33,7 @@ app.post('/upload', (req, res) => {
   console.log('filename: ', uploadRequest);
   const file: uploadedFile = {
     filename: uploadRequest.filename,
-    filesize: uploadRequest.filesize,
+    filesize: parseInt(uploadRequest.filesize, 10),
     id: uploadRequest.id,
     uploadTime: new Date(),
     expireTime: new Date(), // TODO: This is not a real expiration time, yet.
@@ -49,7 +49,7 @@ app.post('/upload', (req, res) => {
         if (addFile(file) !== 1) {
           res.status(500).send('failed to persist upload to metadata');
         } else {
-          res.send({ uploaded: true });
+          res.send(file);
         }
       })
       .catch((err) => res.status(500).send(`failed to upload files ${err}`));

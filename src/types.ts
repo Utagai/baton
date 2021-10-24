@@ -4,7 +4,7 @@
 // and this file is even smaller, I'm going to prefer simplicity.
 type uploadedFile = {
   filename: string;
-  filesize: string;
+  filesize: number;
   id: string;
   uploadTime: Date;
   expireTime: Date;

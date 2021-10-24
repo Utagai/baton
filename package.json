@@ -7,7 +7,7 @@
     "build": "tsc",
     "prestart": "npm run build",
     "start": "node .",
-    "serve": "nodemon src/App.ts",
+    "serve": "nodemon --ignore ./client/ --ignore ./uploaded/ src/App.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
