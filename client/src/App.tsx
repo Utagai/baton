@@ -28,7 +28,43 @@ class App extends Component {
   render() {
     const { data } = this.state;
     console.log('HELLO WORLD!');
+    type file = {
+      filename: string;
+      filesize: string;
+      uploadTime: string;
+      expireTime: string;
+    };
     // const listItems = data.map((str: string) => <li>{str}</li>);
+    const tableRows = data.map((f: file) => (
+      <tr className="border-b hover:shadow-md">
+        <th className="font-normal p-1 text-left px-10">
+          <div className="font-bold font-mono">{f.filename}</div>
+          <div className="text-xs italic">({f.filesize})</div>
+        </th>
+        <th className="font-normal border-b text-left  px-10">
+          <div className="italic">{f.uploadTime}</div>
+        </th>
+        <th className="font-normal border-b text-left px-10">
+          <div className="italic">{f.expireTime}</div>
+        </th>
+        <th className="font-normal border-b">
+          <button
+            aria-label="Download"
+            type="button"
+            className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-gray-500 hover:text-blue-100"
+          >
+            Download
+          </button>
+          <button
+            aria-label="Download"
+            type="button"
+            className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-red-500 hover:text-blue-100"
+          >
+            Delete
+          </button>
+        </th>
+      </tr>
+    ));
     return (
       <>
         <div className="text-6xl font-extrabold mx-10 my-5 text-gray-800">
@@ -55,100 +91,7 @@ class App extends Component {
               </tr>
             </thead>
 
-            <tbody className="">
-              <tr className="border-b hover:shadow-md">
-                <th className="font-normal p-1 text-left px-10">
-                  <div className="font-bold font-mono">pretty.jpg</div>
-                  <div className="text-xs italic">(7 MB)</div>
-                </th>
-                <th className="font-normal border-b text-left  px-10">
-                  <div className="italic">October 23, 9:23 PM</div>
-                </th>
-                <th className="font-normal border-b text-left px-10">
-                  <div className="italic">18 hours</div>
-                </th>
-                <th className="font-normal border-b">
-                  <button
-                    aria-label="Download"
-                    type="button"
-                    className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-gray-500 hover:text-blue-100"
-                  >
-                    Download
-                  </button>
-                  <button
-                    aria-label="Download"
-                    type="button"
-                    className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-red-500 hover:text-blue-100"
-                  >
-                    Delete
-                  </button>
-                </th>
-              </tr>
-              <tr className="border-b hover:shadow-md">
-                <th className="font-normal p-1 text-left px-10">
-                  <div className="font-bold font-mono">data.json</div>
-                  <div className="text-xs italic">(1.2 GB)</div>
-                </th>
-                <th className="font-normal border-b text-left  px-10">
-                  <div className="italic">October 22, 7:13 PM</div>
-                </th>
-                <th className="font-normal border-b text-left px-10">
-                  <div className="italic">6 hours</div>
-                </th>
-                <th className="font-normal border-b">
-                  <button
-                    aria-label="Download"
-                    type="button"
-                    className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-gray-500 hover:text-blue-100"
-                  >
-                    Download
-                  </button>
-                  <button
-                    aria-label="Download"
-                    type="button"
-                    className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-red-500 hover:text-blue-100"
-                  >
-                    Delete
-                  </button>
-                </th>
-              </tr>
-              <tr className="border-b hover:shadow-md">
-                <th className="font-normal p-1 text-left px-10">
-                  <div className="font-bold font-mono">article_link.txt</div>
-                  <div className="text-xs italic">(53 B)</div>
-                </th>
-                <th className="font-normal border-b text-left  px-10">
-                  <div className="italic">October 22, 1:44 AM</div>
-                </th>
-                <th className="font-normal border-b text-left px-10">
-                  <div className="italic">12 minutes</div>
-                </th>
-                <th className="font-normal border-b">
-                  <button
-                    aria-label="Download"
-                    type="button"
-                    className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-gray-500 hover:text-blue-100"
-                  >
-                    Download
-                  </button>
-                  <button
-                    aria-label="Download"
-                    type="button"
-                    className={
-                      'bg-transparent ' +
-                      'font-semibold ' +
-                      'border ' +
-                      'rounded-sm ' +
-                      'p-1.5 ' +
-                      'hover:bg-red-500 ' +
-                      'hover:text-blue-100'
-                    }
-                  >
-                    Delete
-                  </button>
-                </th>
-              </tr>
-            </tbody>
+            <tbody className="">{tableRows}</tbody>
           </table>
         </div>
       </>

@@ -17,6 +17,25 @@ app.listen(port, () => {
 app.get('/express_backend', (_: express.Request, res: express.Response) => {
   console.log('hello babie!');
   res.send({
-    express: ['hello', 'world', 'from', 'express'],
+    express: [
+      {
+        filename: 'pretty.jpg',
+        filesize: '7 MB',
+        uploadTime: 'October 23, 9:23 PM',
+        expireTime: '18 hours',
+      },
+      {
+        filename: 'data.json',
+        filesize: '1.2 GB',
+        uploadTime: 'October 23, 9:23 PM',
+        expireTime: '6 hours',
+      },
+      {
+        filename: 'article_link.txt',
+        filesize: '53 B',
+        uploadTime: 'October 22, 1:44 AM',
+        expireTime: '12 minutes',
+      },
+    ],
   });
 });
