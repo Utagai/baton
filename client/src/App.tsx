@@ -1,12 +1,10 @@
 import './index.css';
+import Banner from './Banner';
 import Table from './Table';
 
 const App = () => (
   <div className="grid place-items-center">
-    <div className="text-6xl font-extrabold mx-10 my-5 text-gray-800">
-      <h1 className="inline-block italic font-extralight">baton</h1>
-      <span className="">🪄</span>
-    </div>
+    <Banner />
 
     <Table />
 
