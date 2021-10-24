@@ -10,13 +10,14 @@ export function getFiles(): uploadedFile[] {
 
 export function addFile(f: uploadedFile): number {
   const insert = db.prepare(
-    'INSERT INTO files (filename, filesize, uploadTime, expireTime) ' +
-      'VALUES(@filename, @filesize, @uploadTime, @expireTime)',
+    'INSERT INTO files (id, filename, filesize, uploadTime, expireTime) ' +
+      'VALUES(@id, @filename, @filesize, @uploadTime, @expireTime)',
   );
   return insert.run({
+    id: f.id,
     filename: f.filename,
     filesize: f.filesize,
-    uploadTime: f.uploadTime.toISOString(),
-    expireTime: f.expireTime.toISOString(),
+    uploadTime: f.uploadTime,
+    expireTime: f.expireTime,
   }).changes;
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import './index.css';
 import debounce from 'lodash.debounce';
 import FileRow from './FileRow';
+import file from './types';
 
 async function callBackendAPI() {
   const response = await fetch('/files');
@@ -35,19 +36,15 @@ function FileRows() {
       .catch((err) => console.log(err));
   });
 
-  console.log('HELLO WORLD!');
-  type file = {
-    filename: string;
-    filesize: number;
-    uploadTime: string;
-    expireTime: string;
-  };
+  console.log('HELLO WORLD!:', data);
   const rows = data.map((f: file) => (
     <FileRow
+      key={f.id}
+      id={f.id}
       filename={f.filename}
       filesize={f.filesize}
-      uploadTimeStr={f.uploadTime}
-      expireTimeStr={f.expireTime}
+      uploadTime={f.uploadTime}
+      expireTime={f.expireTime}
     />
   ));
 

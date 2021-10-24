@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import './index.css';
+import { v4 as uuidv4 } from 'uuid';
 
 function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
   const {
@@ -25,6 +26,7 @@ function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const formData = new FormData();
     formData.append('filename', file.name);
     formData.append('filesize', file.size.toString());
+    formData.append('id', uuidv4());
     formData.append('file', file);
     uploadRequests.push(
       fetch('/upload', {

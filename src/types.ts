@@ -5,6 +5,7 @@
 type uploadedFile = {
   filename: string;
   filesize: string;
+  id: string;
   uploadTime: Date;
   expireTime: Date;
 };

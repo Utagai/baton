@@ -24,7 +24,7 @@ app.get('/files', (_, res) => {
   console.log('hello babie!');
   const files = getFiles();
   res.send({
-    files: files,
+    files,
   });
 });
 
@@ -34,12 +34,14 @@ app.post('/upload', (req, res) => {
   const file: uploadedFile = {
     filename: uploadRequest.filename,
     filesize: uploadRequest.filesize,
+    id: uploadRequest.id,
     uploadTime: new Date(),
     expireTime: new Date(), // TODO: This is not a real expiration time, yet.
   };
 
   const fileData = req.files?.file;
   if ('mv' in fileData) {
+    // Check if this is one or multiple files.
     fileData
       .mv(`./uploaded/${fileData.name}`)
       .then(() => {
