@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import './index.css';
 
-async function handleUpload(event: React.MouseEvent<HTMLInputElement>) {
+function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
   const {
     currentTarget: { files },
   } = event;
@@ -69,7 +69,7 @@ function UploadButtons() {
             className="hidden"
             type="file"
             ref={fileUploadInputRef}
-            onClick={handleUpload}
+            onChange={handleUpload}
             multiple
           />
         </span>
