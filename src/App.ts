@@ -1,7 +1,11 @@
 import express from 'express';
 import fileUpload from 'express-fileupload';
+import { addDays } from 'date-fns';
+
 import { addFile, getFiles } from './SQLite';
 import uploadedFile from './types';
+
+const defaultFileLifetimeInDays = 7;
 
 const app = express();
 const port = 8080; // default port to listen
@@ -36,7 +40,7 @@ app.post('/upload', (req, res) => {
     filesize: parseInt(uploadRequest.filesize, 10),
     id: uploadRequest.id,
     uploadTime: new Date(),
-    expireTime: new Date(), // TODO: This is not a real expiration time, yet.
+    expireTime: addDays(new Date(), defaultFileLifetimeInDays),
   };
 
   const fileData = req.files?.file;

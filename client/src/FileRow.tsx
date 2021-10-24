@@ -14,10 +14,10 @@ function FileRow(f: file) {
   const uploadTimeHumanReadable = format(Date.parse(uploadTime), 'MMMM do, p');
   const expireTimeLeft = formatDuration(
     intervalToDuration({
-      start: Date.parse(expireTime),
-      end: new Date(),
+      start: new Date(),
+      end: Date.parse(expireTime),
     }),
-    { format: ['minutes'] },
+    { format: ['days', 'hours', 'minutes'], delimiter: ', ' },
   );
 
   return (
