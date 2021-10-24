@@ -34,7 +34,6 @@ class App extends Component {
       uploadTime: string;
       expireTime: string;
     };
-    // const listItems = data.map((str: string) => <li>{str}</li>);
     const tableRows = data.map((f: file) => (
       <tr className="border-b hover:shadow-md">
         <th className="font-normal p-1 text-left px-10">
@@ -66,12 +65,12 @@ class App extends Component {
       </tr>
     ));
     return (
-      <>
+      <div className="grid place-items-center">
         <div className="text-6xl font-extrabold mx-10 my-5 text-gray-800">
           <h1 className="inline-block italic font-extralight">baton</h1>
           <span className="">🪄</span>
         </div>
-        <div className="inline-block min-w-full border-4 border-gray-200 rounded-sm mx-10">
+        <div className="w-1/2 border-4 border-gray-200 rounded-sm mx-10">
           <table className="min-w-full mx-auto rounded-md bg-gray-50 text-gray-700">
             <thead className="">
               <tr className="border-2 border-b-gray-500">
@@ -94,7 +93,7 @@ class App extends Component {
             <tbody className="">{tableRows}</tbody>
           </table>
         </div>
-      </>
+      </div>
     );
   }
 }
