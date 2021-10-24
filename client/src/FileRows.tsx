@@ -46,8 +46,8 @@ function FileRows() {
     <FileRow
       filename={f.filename}
       filesize={f.filesize}
-      uploadTime={f.uploadTime}
-      expireTime={f.expireTime}
+      uploadTimeStr={f.uploadTime}
+      expireTimeStr={f.expireTime}
     />
   ));
 

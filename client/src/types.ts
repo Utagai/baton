@@ -5,8 +5,8 @@
 type file = {
   filename: string;
   filesize: string;
-  uploadTime: string;
-  expireTime: string;
+  uploadTimeStr: string;
+  expireTimeStr: string;
 };
 
 export default file;

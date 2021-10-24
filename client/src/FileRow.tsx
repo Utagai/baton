@@ -1,11 +1,24 @@
 import './index.css';
+import { format, formatDuration, intervalToDuration } from 'date-fns';
 import file from './types';
 
 function FileRow(f: file) {
   const { filename } = f;
   const { filesize } = f;
-  const { uploadTime } = f;
-  const { expireTime } = f;
+  const { uploadTimeStr } = f;
+  const { expireTimeStr } = f;
+
+  const uploadTimeHumanReadable = format(
+    Date.parse(uploadTimeStr),
+    'MMMM do, p',
+  );
+  const expireTimeLeft = formatDuration(
+    intervalToDuration({
+      start: Date.parse(expireTimeStr),
+      end: new Date(),
+    }),
+    { format: ['minutes'] },
+  );
 
   return (
     <tr className="border-b hover:shadow-md">
@@ -14,10 +27,10 @@ function FileRow(f: file) {
         <div className="text-xs italic">({filesize})</div>
       </th>
       <th className="font-normal border-b text-left  px-10">
-        <div className="italic">{uploadTime}</div>
+        <div className="italic">{uploadTimeHumanReadable}</div>
       </th>
       <th className="font-normal border-b text-left px-10">
-        <div className="italic">{expireTime}</div>
+        <div className="italic">{expireTimeLeft}</div>
       </th>
       <th className="font-normal border-b">
         <button
