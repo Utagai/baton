@@ -1,10 +1,14 @@
 import express from 'express';
+import fileUpload from 'express-fileupload';
 
 const app = express();
 const port = 8080; // default port to listen
 
+app.use(express.json());
+app.use(fileUpload());
+
 // define a route handler for the default home page
-app.get('/', (_: express.Request, res: express.Response) => {
+app.get('/', (_, res) => {
   res.send('Hello world!');
 });
 
@@ -14,7 +18,7 @@ app.listen(port, () => {
 });
 
 // For the react app to hit.
-app.get('/express_backend', (_: express.Request, res: express.Response) => {
+app.get('/express_backend', (_, res) => {
   console.log('hello babie!');
   res.send({
     express: [
@@ -38,6 +42,26 @@ app.get('/express_backend', (_: express.Request, res: express.Response) => {
       },
     ],
   });
+});
+
+app.post('/upload', (req, res) => {
+  const { body: uploadRequest } = req;
+  console.log('filename: ', uploadRequest);
+
+  const fileToUpload = req.files?.file;
+  let mv: Promise<void[]>;
+  if ('mv' in fileToUpload) {
+    mv = Promise.all([fileToUpload.mv(`./uploaded/${fileToUpload.name}`)]);
+  } else {
+    mv = Promise.all(
+      fileToUpload.map((file) => file.mv(`./uploaded/${file.name}`)),
+    );
+  }
+
+  mv.then(() => {
+    console.log('uploaded!');
+    res.send({ uploaded: true });
+  }).catch((err) => res.status(500).send(`failed to upload files ${err}`));
 });
 
 // Need to implement:

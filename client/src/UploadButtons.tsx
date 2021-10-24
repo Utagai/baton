@@ -6,7 +6,38 @@ async function handleUpload(event: React.MouseEvent<HTMLInputElement>) {
     currentTarget: { files },
   } = event;
 
+  if (files === null) {
+    // Nothing to do if so...
+    return;
+  }
+
   console.log('files chosen: ', files);
+
+  const uploadRequests = [];
+  for (let i = 0; i < files.length; i += 1) {
+    const file = files.item(i);
+    if (file === null) {
+      console.log('skipping file...');
+      // Nothing else we can do.
+      continue;
+    }
+
+    const formData = new FormData();
+    formData.append('filename', file.name);
+    formData.append('filesize', file.size.toString());
+    formData.append('file', file);
+    uploadRequests.push(
+      fetch('/upload', {
+        method: 'POST',
+        body: formData,
+      }),
+    );
+  }
+
+  console.log('upload reqs: ', uploadRequests);
+  Promise.all(uploadRequests)
+    .then((resp) => console.log('all reqs res: ', resp[0].json()))
+    .catch((err) => console.log('err from upload: ', err));
 }
 
 function UploadButtons() {
