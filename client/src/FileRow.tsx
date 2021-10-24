@@ -1,5 +1,6 @@
 import './index.css';
 import { format, formatDuration, intervalToDuration } from 'date-fns';
+import prettyBytes from 'pretty-bytes';
 import file from './types';
 
 function FileRow(f: file) {
@@ -24,7 +25,7 @@ function FileRow(f: file) {
     <tr className="border-b hover:shadow-md">
       <th className="font-normal p-1 text-left px-10">
         <div className="font-bold font-mono">{filename}</div>
-        <div className="text-xs italic">({filesize})</div>
+        <div className="text-xs italic">({prettyBytes(filesize)})</div>
       </th>
       <th className="font-normal border-b text-left  px-10">
         <div className="italic">{uploadTimeHumanReadable}</div>

@@ -38,7 +38,7 @@ function FileRows() {
   console.log('HELLO WORLD!');
   type file = {
     filename: string;
-    filesize: string;
+    filesize: number;
     uploadTime: string;
     expireTime: string;
   };
