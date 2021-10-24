@@ -1,5 +1,7 @@
 import express from 'express';
 import fileUpload from 'express-fileupload';
+import { addFile } from './SQLite';
+import uploadedFile from './types';
 
 const app = express();
 const port = 8080; // default port to listen
@@ -47,21 +49,33 @@ app.get('/express_backend', (_, res) => {
 app.post('/upload', (req, res) => {
   const { body: uploadRequest } = req;
   console.log('filename: ', uploadRequest);
+  const file: uploadedFile = {
+    filename: uploadRequest.filename,
+    filesize: uploadRequest.filesize,
+    uploadTime: new Date(),
+    expireTime: new Date(), // TODO: This is not a real expiration time, yet.
+  };
 
-  const fileToUpload = req.files?.file;
-  let mv: Promise<void[]>;
-  if ('mv' in fileToUpload) {
-    mv = Promise.all([fileToUpload.mv(`./uploaded/${fileToUpload.name}`)]);
+  const fileData = req.files?.file;
+  if ('mv' in fileData) {
+    fileData
+      .mv(`./uploaded/${fileData.name}`)
+      .then(() => {
+        console.log('uploaded, now adding file to metadata');
+        if (addFile(file) !== 1) {
+          res.status(500).send('failed to persist upload to metadata');
+        } else {
+          res.send({ uploaded: true });
+        }
+      })
+      .catch((err) => res.status(500).send(`failed to upload files ${err}`));
   } else {
-    mv = Promise.all(
-      fileToUpload.map((file) => file.mv(`./uploaded/${file.name}`)),
-    );
+    res
+      .status(400)
+      .send(
+        `cannot upload more than 1 file (tried to upload ${fileData.length})`,
+      );
   }
-
-  mv.then(() => {
-    console.log('uploaded!');
-    res.send({ uploaded: true });
-  }).catch((err) => res.status(500).send(`failed to upload files ${err}`));
 });
 
 // Need to implement:
