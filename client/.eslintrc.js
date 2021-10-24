@@ -13,7 +13,7 @@ module.exports = {
     'plugin:import/warnings',
     'plugin:import/typescript',
   ],
-  ignorePatterns: ['/dist/', 'package.json'],
+  ignorePatterns: ['/dist/', '*.json'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaFeatures: {

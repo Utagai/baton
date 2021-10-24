@@ -17,7 +17,7 @@ module.exports = {
     ecmaVersion: 12,
   },
   plugins: ['@typescript-eslint', 'prettier'],
-  ignorePatterns: ['/dist/', 'package.json'],
+  ignorePatterns: ['/dist/', '*.json'],
   rules: {
     'no-console': 0,
   },
