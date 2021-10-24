@@ -28,7 +28,7 @@ function FileRow(f: file) {
           Download
         </button>
         <button
-          aria-label="Download"
+          aria-label="Delete"
           type="button"
           className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-red-500 hover:text-blue-100"
         >

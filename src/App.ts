@@ -39,3 +39,10 @@ app.get('/express_backend', (_: express.Request, res: express.Response) => {
     ],
   });
 });
+
+// Need to implement:
+// An endpoint that accepts arbitrary binary upload.
+//  Should support file upload from browser.
+//  Should also support straight binary upload (e.g. text inputted into text
+//  input).
+//  UI updates to include a button for this.
