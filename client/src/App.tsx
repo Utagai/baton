@@ -5,6 +5,7 @@ import './index.css';
 import Banner from './Banner';
 import Table from './Table';
 import UploadButtons from './UploadButtons';
+import CustomText from './CustomText';
 import file from './types';
 
 async function callBackendAPI() {
@@ -80,23 +81,13 @@ const App = () => {
         }}
       />
 
-      <div
-        ref={textInputRef}
-        className="w-1/2 grid place-items-center invisible"
-      >
-        <textarea
-          placeholder="   ..."
-          className="border-2 block border-gray-400 w-1/2 rounded-sm"
-        />
-
-        <button
-          type="button"
-          className="border block font-semibold rounded-sm text-gray-700 bg-gray-50 px-4 py-2 m-1 hover:bg-gray-500 hover:text-gray-50"
-          aria-label="Upload contents"
-        >
-          🛫 Upload contents
-        </button>
-      </div>
+      <CustomText
+        textInputAreaRef={textInputRef}
+        // TODO: Is this little wrapping code around setFiles being duplicated?
+        addFile={(f: file) => {
+          setFiles(files.concat([f]));
+        }}
+      />
     </div>
   );
 };

@@ -49,7 +49,7 @@ app.post('/upload', (req, res) => {
   if ('mv' in fileData) {
     // Check if this is one or multiple files.
     fileData
-      .mv(`./uploaded/${fileData.name}`)
+      .mv(`./uploaded/${file.id}${path.extname(file.filename)}`)
       .then(() => {
         console.log('uploaded, now adding file to metadata');
         if (addFile(file) !== 1) {
@@ -89,7 +89,12 @@ app.get('/download/:id', (req, res) => {
 
   const file = getFile(id);
 
-  const fullpath = path.join(process.cwd(), './uploaded/', file.filename);
+  const fullpath = `${path.join(
+    process.cwd(),
+    './uploaded/',
+    id,
+  )}${path.extname(file.filename)}`;
+  console.log('fullpath for dl: ', fullpath);
   res.download(fullpath, file.filename, (err) => {
     res.status(500).send(err);
   });

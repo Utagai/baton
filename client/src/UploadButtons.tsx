@@ -79,7 +79,10 @@ function UploadButtons(props: {
             className="border font-semibold rounded-sm text-gray-700 bg-gray-50 px-4 py-2 m-1 hover:bg-gray-500 hover:text-gray-50"
             // This just makes it so that we trigger the click action on our
             // invisible file input. Once we've done that, the real action happens in
-            // the invisible input's onclick handler.
+            // the invisible input's onChange handler.
+            // TODO: Is this maybe over-complicated? Maybe we can just get rid
+            // of this button and style the input in the same way, and only rely
+            // on its onChange?
             onClick={() => fileUploadInputRef.current?.click()}
           >
             📂 Upload a file

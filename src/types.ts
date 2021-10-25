@@ -3,6 +3,7 @@
 // module as a dep in both client/server but since this project is quite small
 // and this file is even smaller, I'm going to prefer simplicity.
 type uploadedFile = {
+  // TODO: These two have stutter.
   filename: string;
   filesize: number;
   id: string;
