@@ -1,15 +1,25 @@
-import './index.css';
 import { format, formatDuration, intervalToDuration } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
+
+import './index.css';
 import file from './types';
 
-function FileRow(f: file) {
-  console.log('f: ', f);
-  const { id } = f;
-  const { filename } = f;
-  const { filesize } = f;
-  const { uploadTime } = f;
-  const { expireTime } = f;
+function handleDelete(id: string, deleteFile: (innerId: string) => void) {
+  fetch(`/delete/${id}`, {
+    method: 'DELETE',
+  })
+    .then(async (resp) => {
+      console.log('response from backend: ', await resp.text());
+      deleteFile(id);
+    })
+    .catch((err) => console.log(`error from /delete call: ${err}`));
+}
+
+function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
+  const {
+    f: { id, filename, filesize, uploadTime, expireTime },
+    deleteFile,
+  } = props;
 
   const uploadTimeHumanReadable = format(Date.parse(uploadTime), 'MMMM do, p');
   const expireTimeLeft = formatDuration(
@@ -43,6 +53,7 @@ function FileRow(f: file) {
         <button
           aria-label="Delete"
           type="button"
+          onClick={() => handleDelete(id, deleteFile)}
           className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-red-500 hover:text-blue-100"
         >
           Delete

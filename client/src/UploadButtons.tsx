@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import './index.css';
 import file from './types';
 
+// TODO: Maybe this should exist in App.tsx and passed down here?
 function handleUpload(
   event: React.ChangeEvent<HTMLInputElement>,
   addFile: (f: file) => void,

@@ -43,7 +43,12 @@ const App = () => {
     <div className="grid place-items-center">
       <Banner />
 
-      <Table files={files} />
+      <Table
+        files={files}
+        deleteFile={(id: string) => {
+          setFiles(files.filter((f) => f.id === id));
+        }}
+      />
 
       <UploadButtons
         addFile={(f: file) => {

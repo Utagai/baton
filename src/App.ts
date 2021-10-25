@@ -2,7 +2,7 @@ import express from 'express';
 import fileUpload from 'express-fileupload';
 import { addDays } from 'date-fns';
 
-import { addFile, getFiles } from './SQLite';
+import { addFile, deleteFile, getFiles } from './SQLite';
 import uploadedFile from './types';
 
 const defaultFileLifetimeInDays = 7;
@@ -63,6 +63,20 @@ app.post('/upload', (req, res) => {
       .send(
         `cannot upload more than 1 file (tried to upload ${fileData.length})`,
       );
+  }
+});
+
+app.delete('/delete/:id', (req, res) => {
+  const {
+    params: { id },
+  } = req;
+
+  console.log('Got the body for deletion', req.body);
+
+  if (deleteFile(id) !== 1) {
+    res.status(500).send(`failed to delete file with id ${id}`);
+  } else {
+    res.send({ id });
   }
 });
 

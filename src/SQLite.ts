@@ -9,15 +9,20 @@ export function getFiles(): uploadedFile[] {
 }
 
 export function addFile(f: uploadedFile): number {
-  const insert = db.prepare(
+  const insertStmt = db.prepare(
     'INSERT INTO files (id, filename, filesize, uploadTime, expireTime) ' +
       'VALUES(@id, @filename, @filesize, @uploadTime, @expireTime)',
   );
-  return insert.run({
+  return insertStmt.run({
     id: f.id,
     filename: f.filename,
     filesize: f.filesize,
     uploadTime: f.uploadTime.toISOString(),
     expireTime: f.expireTime.toISOString(),
   }).changes;
+}
+
+export function deleteFile(id: string): number {
+  const deleteStmt = db.prepare('DELETE FROM files WHERE id = @id');
+  return deleteStmt.run({ id }).changes;
 }
