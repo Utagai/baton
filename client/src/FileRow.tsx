@@ -5,6 +5,24 @@ import DeleteButton from './DeleteButton';
 import './index.css';
 import file from './types';
 
+function handleDownload(id: string, filename: string) {
+  console.log('will download: ', id);
+
+  // This is so hacky but this seems to be the nicest way to do it...
+  // window.open() seems nicer but it can trigger pop-up blockers and such (and
+  // at least for my own firefox set-up, firefox initially blocks it...). This
+  // gives a more seamless experience.
+  // TODO: On top of this already hacky business, we are hardcoding the
+  // host/port of the backend.
+  const url = `http://localhost:8080/download/${id}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
   const {
     f: { id, filename, filesize, uploadTime, expireTime },
@@ -36,6 +54,9 @@ function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
         <button
           aria-label="Download"
           type="button"
+          onClick={() => {
+            handleDownload(id, filename);
+          }}
           className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-gray-500 hover:text-blue-100"
         >
           Download

@@ -8,6 +8,11 @@ export function getFiles(): uploadedFile[] {
   return db.prepare('SELECT * FROM files').all();
 }
 
+export function getFile(id: string): uploadedFile {
+  const selectStmt = db.prepare('SELECT * FROM files WHERE id = @id');
+  return selectStmt.get({ id });
+}
+
 export function addFile(f: uploadedFile): number {
   const insertStmt = db.prepare(
     'INSERT INTO files (id, filename, filesize, uploadTime, expireTime) ' +

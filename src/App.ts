@@ -1,8 +1,10 @@
 import express from 'express';
 import fileUpload from 'express-fileupload';
 import { addDays } from 'date-fns';
+import path from 'path';
+import process from 'process';
 
-import { addFile, deleteFile, getFiles } from './SQLite';
+import { addFile, deleteFile, getFile, getFiles } from './SQLite';
 import uploadedFile from './types';
 
 const defaultFileLifetimeInDays = 7;
@@ -78,6 +80,19 @@ app.delete('/delete/:id', (req, res) => {
   } else {
     res.send({ id });
   }
+});
+
+app.get('/download/:id', (req, res) => {
+  const {
+    params: { id },
+  } = req;
+
+  const file = getFile(id);
+
+  const fullpath = path.join(process.cwd(), './uploaded/', file.filename);
+  res.download(fullpath, file.filename, (err) => {
+    res.status(500).send(err);
+  });
 });
 
 // Need to implement:
