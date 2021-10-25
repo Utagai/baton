@@ -1,19 +1,9 @@
 import { format, formatDuration, intervalToDuration } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
 
+import DeleteButton from './DeleteButton';
 import './index.css';
 import file from './types';
-
-function handleDelete(id: string, deleteFile: (innerId: string) => void) {
-  fetch(`/delete/${id}`, {
-    method: 'DELETE',
-  })
-    .then(async (resp) => {
-      console.log('response from backend: ', await resp.text());
-      deleteFile(id);
-    })
-    .catch((err) => console.log(`error from /delete call: ${err}`));
-}
 
 function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
   const {
@@ -50,14 +40,7 @@ function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
         >
           Download
         </button>
-        <button
-          aria-label="Delete"
-          type="button"
-          onClick={() => handleDelete(id, deleteFile)}
-          className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-red-500 hover:text-blue-100"
-        >
-          Delete
-        </button>
+        <DeleteButton id={id} deleteFile={deleteFile} />
       </th>
     </tr>
   );
