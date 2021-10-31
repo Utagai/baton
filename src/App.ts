@@ -9,21 +9,18 @@ import expressPino from 'express-pino-logger';
 import FilesDB from './FilesDB';
 import File from './File';
 
+// TODO: These things should be configurable. Environment variables are probably
+// sufficient for all of these, since there aren't many of them.
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 const filesDB = new FilesDB('./sqlite/baton_dev.db');
-const app = express();
 const port = 8080;
 
+const app = express();
 app.use(express.json());
 app.use(fileUpload());
 app.use(expressPino({ logger }));
 
 const defaultFileLifetimeInDays = 7;
-
-// Starts the server.
-app.listen(port, () => {
-  logger.info(`server started at http://localhost:${port}`);
-});
 
 // sendErr is a tiny helper for returning JSON errors from the express endpoints.
 function sendErr(res: express.Response, msg: string, details?: Error | object) {
@@ -39,6 +36,11 @@ function sendErr(res: express.Response, msg: string, details?: Error | object) {
     res.status(500).send(JSON.stringify({ msg, ...details }));
   }
 }
+
+// Starts the server.
+app.listen(port, () => {
+  logger.info(`server started at http://localhost:${port}`);
+});
 
 // /files returns a listing of all the files, _including_ expired files.
 app.get('/files', (_, res) => {
