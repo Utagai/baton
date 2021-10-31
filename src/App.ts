@@ -6,39 +6,34 @@ import process from 'process';
 import pino from 'pino';
 import expressPino from 'express-pino-logger';
 
-import {
-  addFile,
-  deleteFile,
-  deleteExpiredFiles,
-  getFile,
-  getFiles,
-} from './SQLite';
+import FilesDB from './FilesDB';
 import uploadedFile from './types';
 
-const defaultFileLifetimeInDays = 7;
-
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
-
+const filesdb = new FilesDB('./sqlite/baton_dev.db');
 const app = express();
-const port = 8080; // default port to listen
+const port = 8080;
 
 app.use(express.json());
 app.use(fileUpload());
 app.use(expressPino({ logger }));
 
-// define a route handler for the default home page
-app.get('/', (_, res) => {
-  res.send('Hello world!');
-});
+const defaultFileLifetimeInDays = 7;
 
 // start the Express server
 app.listen(port, () => {
   console.log(`server started at http://localhost:${port}`);
 });
 
+// A tiny helper for returning JSON errors.
+function sendErr(res: express.Response, msg: string, details?: Error | object) {
+  logger.error(details, msg);
+  res.status(500).send(JSON.stringify({ msg, ...details }));
+}
+
 // For the react app to hit.
 app.get('/files', (_, res) => {
-  const files = getFiles();
+  const files = filesdb.getAllFiles();
   res.send({
     files,
   });
@@ -55,24 +50,29 @@ app.post('/upload', (req, res) => {
   };
 
   const fileData = req.files?.file;
+  // Check if this is one or multiple files.
   if ('mv' in fileData) {
-    // Check if this is one or multiple files.
     fileData
       .mv(`./uploaded/${file.id}${path.extname(file.filename)}`)
       .then(() => {
-        if (addFile(file) !== 1) {
-          res.status(500).send('failed to persist upload to metadata');
+        const numChanged = filesdb.addFile(file);
+        if (numChanged === 1) {
+          sendErr(res, 'failed to persist upload to metadata');
         } else {
           res.send(file);
         }
       })
-      .catch((err) => res.status(500).send(`failed to upload files ${err}`));
+      .catch((err) => {
+        sendErr(res, `failed to upload files`, err);
+      });
   } else {
-    res
-      .status(400)
-      .send(
-        `cannot upload more than 1 file (tried to upload ${fileData.length})`,
-      );
+    logger.error(
+      'client attempted to upload multiple files (%d)',
+      fileData.length,
+    );
+    sendErr(res, `cannot upload more than 1 file`, {
+      attemptedCount: fileData.length,
+    });
   }
 });
 
@@ -81,15 +81,15 @@ app.delete('/delete/:id', (req, res) => {
     params: { id },
   } = req;
 
-  if (deleteFile(id) !== 1) {
-    res.status(500).send(`failed to delete file with id ${id}`);
+  if (filesdb.deleteFile(id) !== 1) {
+    sendErr(res, `failed to delete file`, { id });
   } else {
     res.send({ id });
   }
 });
 
 app.delete('/deleteexpired', (_req, _res) => {
-  deleteExpiredFiles();
+  filesdb.deleteExpiredFiles();
 });
 
 app.get('/download/:id', (req, res) => {
@@ -97,7 +97,7 @@ app.get('/download/:id', (req, res) => {
     params: { id },
   } = req;
 
-  const file = getFile(id);
+  const file = filesdb.getFile(id);
 
   const fullpath = `${path.join(
     process.cwd(),
@@ -105,6 +105,7 @@ app.get('/download/:id', (req, res) => {
     id,
   )}${path.extname(file.filename)}`;
   res.download(fullpath, file.filename, (err) => {
-    res.status(500).send(err);
+    logger.error(err, 'failed to send download to client');
+    sendErr(res, 'failed to return a download', err);
   });
 });

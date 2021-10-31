@@ -48,7 +48,9 @@ function handleUpload(
       responses.forEach(async (resp) => {
         const f = await resp.json();
         console.log('req res: ', f);
-        addFile(f);
+        if (resp.status === 200) {
+          addFile(f);
+        }
       });
     })
     .catch((err) => console.log('err from upload: ', err));
