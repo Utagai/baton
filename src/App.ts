@@ -13,6 +13,7 @@ import File from './File';
 // sufficient for all of these, since there aren't many of them.
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 const filesDB = new FilesDB('./sqlite/baton_dev.db');
+const fileUploadPath = './uploaded/';
 const port = 8080;
 
 const app = express();
@@ -67,7 +68,7 @@ app.post('/upload', (req, res) => {
   // Check if this is one or multiple files.
   if ('mv' in fileData) {
     fileData
-      .mv(`./uploaded/${file.id}${path.extname(file.name)}`)
+      .mv(`${fileUploadPath}${file.id}${path.extname(file.name)}`)
       .then(() => {
         const numChanged = filesDB.addFile(file);
         if (numChanged === 1) {
@@ -124,7 +125,7 @@ app.get('/download/:id', (req, res) => {
 
   const fullpath = `${path.join(
     process.cwd(),
-    './uploaded/',
+    fileUploadPath,
     id,
   )}${path.extname(file.name)}`;
   res.download(fullpath, file.name, (err) => {
