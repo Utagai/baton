@@ -22,7 +22,7 @@ const defaultFileLifetimeInDays = 7;
 
 // start the Express server
 app.listen(port, () => {
-  console.log(`server started at http://localhost:${port}`);
+  logger.info(`server started at http://localhost:${port}`);
 });
 
 // A tiny helper for returning JSON errors.
