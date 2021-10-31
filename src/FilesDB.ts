@@ -1,6 +1,6 @@
 import sqlite from 'better-sqlite3';
 
-import uploadedFile from './types';
+import File from './File';
 
 class FilesDB {
   db: sqlite.Database;
@@ -9,24 +9,24 @@ class FilesDB {
     this.db = sqlite(sqliteDBPath);
   }
 
-  getAllFiles(): uploadedFile[] {
+  getAllFiles(): File[] {
     return this.db.prepare('SELECT * FROM files').all();
   }
 
-  getFile(id: string): uploadedFile {
+  getFile(id: string): File {
     const selectStmt = this.db.prepare('SELECT * FROM files WHERE id = @id');
     return selectStmt.get({ id });
   }
 
-  addFile(f: uploadedFile): number {
+  addFile(f: File): number {
     const insertStmt = this.db.prepare(
       'INSERT INTO files (id, filename, filesize, uploadTime, expireTime) ' +
         'VALUES(@id, @filename, @filesize, @uploadTime, @expireTime)',
     );
     return insertStmt.run({
       id: f.id,
-      filename: f.filename,
-      filesize: f.filesize,
+      filename: f.name,
+      filesize: f.size,
       uploadTime: f.uploadTime.toISOString(),
       expireTime: f.expireTime.toISOString(),
     }).changes;

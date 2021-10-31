@@ -7,7 +7,7 @@ import pino from 'pino';
 import expressPino from 'express-pino-logger';
 
 import FilesDB from './FilesDB';
-import uploadedFile from './types';
+import File from './File';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 const filesdb = new FilesDB('./sqlite/baton_dev.db');
@@ -50,9 +50,9 @@ app.get('/files', (_, res) => {
 
 app.post('/upload', (req, res) => {
   const { body: uploadRequest } = req;
-  const file: uploadedFile = {
-    filename: uploadRequest.filename,
-    filesize: parseInt(uploadRequest.filesize, 10),
+  const file: File = {
+    name: uploadRequest.filename,
+    size: parseInt(uploadRequest.filesize, 10),
     id: uploadRequest.id,
     uploadTime: new Date(),
     expireTime: addDays(new Date(), defaultFileLifetimeInDays),
@@ -62,7 +62,7 @@ app.post('/upload', (req, res) => {
   // Check if this is one or multiple files.
   if ('mv' in fileData) {
     fileData
-      .mv(`./uploaded/${file.id}${path.extname(file.filename)}`)
+      .mv(`./uploaded/${file.id}${path.extname(file.name)}`)
       .then(() => {
         const numChanged = filesdb.addFile(file);
         if (numChanged === 1) {
@@ -112,8 +112,8 @@ app.get('/download/:id', (req, res) => {
     process.cwd(),
     './uploaded/',
     id,
-  )}${path.extname(file.filename)}`;
-  res.download(fullpath, file.filename, (err) => {
+  )}${path.extname(file.name)}`;
+  res.download(fullpath, file.name, (err) => {
     logger.error(err, 'failed to send download to client');
     sendErr(res, 'failed to return a download', err);
   });
