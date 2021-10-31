@@ -26,6 +26,8 @@ const defaultFileLifetimeInDays = 7;
 // sendErr is a tiny helper for returning JSON errors from the express endpoints.
 function sendErr(res: express.Response, msg: string, details?: Error | object) {
   logger.error(details, msg);
+  // TODO: We may also want to conditionally show errors depending on if we are
+  // developing locally vs. in production.
   if (details instanceof Error) {
     // Hide the error from the client, since it contains server-side 'internal'
     // information.
@@ -71,7 +73,7 @@ app.post('/upload', (req, res) => {
       .mv(`${fileUploadPath}${file.id}${path.extname(file.name)}`)
       .then(() => {
         const numChanged = filesDB.addFile(file);
-        if (numChanged === 1) {
+        if (numChanged !== 1) {
           sendErr(res, 'failed to persist upload to metadata');
         } else {
           res.send(file);
