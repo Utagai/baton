@@ -28,7 +28,16 @@ app.listen(port, () => {
 // A tiny helper for returning JSON errors.
 function sendErr(res: express.Response, msg: string, details?: Error | object) {
   logger.error(details, msg);
-  res.status(500).send(JSON.stringify({ msg, ...details }));
+  if (details instanceof Error) {
+    // Hide the error from the client, since it contains server-side 'internal'
+    // information.
+    // It likely doesn't matter cause I'm the only one that uses it, but
+    // whatever.
+    res.status(500).send(JSON.stringify({ msg }));
+  } else {
+    // TODO: We are not handling the case where details has a field named err.
+    res.status(500).send(JSON.stringify({ msg, ...details }));
+  }
 }
 
 // For the react app to hit.
