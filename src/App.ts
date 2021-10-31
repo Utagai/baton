@@ -20,12 +20,12 @@ app.use(expressPino({ logger }));
 
 const defaultFileLifetimeInDays = 7;
 
-// start the Express server
+// Starts the server.
 app.listen(port, () => {
   logger.info(`server started at http://localhost:${port}`);
 });
 
-// A tiny helper for returning JSON errors.
+// sendErr is a tiny helper for returning JSON errors from the express endpoints.
 function sendErr(res: express.Response, msg: string, details?: Error | object) {
   logger.error(details, msg);
   if (details instanceof Error) {
@@ -40,7 +40,7 @@ function sendErr(res: express.Response, msg: string, details?: Error | object) {
   }
 }
 
-// For the react app to hit.
+// /files returns a listing of all the files, _including_ expired files.
 app.get('/files', (_, res) => {
   const files = filesDB.getAllFiles();
   res.send({
@@ -48,6 +48,9 @@ app.get('/files', (_, res) => {
   });
 });
 
+// /upload uploads the specified file contents. Metadata about the file is
+// created at this time as well, making the file available for listing/download
+// once this endpoint returns.
 app.post('/upload', (req, res) => {
   const { body: uploadRequest } = req;
   const file: File = {
@@ -85,6 +88,9 @@ app.post('/upload', (req, res) => {
   }
 });
 
+// /delete/:id deletes the file specified by :id. This does not delete the file
+// on disk.
+// TODO: This _should_ delete the file on disk.
 app.delete('/delete/:id', (req, res) => {
   const {
     params: { id },
@@ -97,10 +103,16 @@ app.delete('/delete/:id', (req, res) => {
   }
 });
 
+// /deleteexpired triggers deletion of expired files. Expired files are not
+// deleted on disk.
+// TODO: Deletion of expired data should actually happen in the background of
+// this server or some separate process.
 app.delete('/deleteexpired', (_req, _res) => {
   filesDB.deleteExpiredFiles();
 });
 
+// /download/:id returns the file specified by :id as a downloadable file. This
+// should trigger a download in the user's browser.
 app.get('/download/:id', (req, res) => {
   const {
     params: { id },
