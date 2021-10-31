@@ -4,7 +4,13 @@ import { addDays } from 'date-fns';
 import path from 'path';
 import process from 'process';
 
-import { addFile, deleteFile, getFile, getFiles } from './SQLite';
+import {
+  addFile,
+  deleteFile,
+  deleteExpiredFiles,
+  getFile,
+  getFiles,
+} from './SQLite';
 import uploadedFile from './types';
 
 const defaultFileLifetimeInDays = 7;
@@ -80,6 +86,11 @@ app.delete('/delete/:id', (req, res) => {
   } else {
     res.send({ id });
   }
+});
+
+app.delete('/deleteexpired', (_req, _res) => {
+  console.log('delete expired!');
+  deleteExpiredFiles();
 });
 
 app.get('/download/:id', (req, res) => {

@@ -31,3 +31,10 @@ export function deleteFile(id: string): number {
   const deleteStmt = db.prepare('DELETE FROM files WHERE id = @id');
   return deleteStmt.run({ id }).changes;
 }
+
+export function deleteExpiredFiles() {
+  const deleteStmt = db.prepare('DELETE FROM files WHERE @now > expireTime');
+  // Normally we return the number of rows deleted but there's no point.
+  // Sometimes we honestly won't delete anything and other times we will.
+  deleteStmt.run({ now: new Date().toISOString() });
+}

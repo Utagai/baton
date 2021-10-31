@@ -8,14 +8,28 @@ import UploadButtons from './UploadButtons';
 import CustomText from './CustomText';
 import file from './types';
 
-async function callBackendAPI() {
-  const response = await fetch('/files');
+async function callBackendAPI(endpoint: string, method: string) {
+  const response = await fetch(endpoint, { method });
   const body = await response.json();
 
   if (response.status !== 200) {
     throw Error(body.message);
   }
+
   return body;
+}
+
+async function triggerDeletionOfExpiredFiles() {
+  callBackendAPI('deleteexpired', 'DELETE');
+}
+
+async function getFilesFromBackend() {
+  return callBackendAPI('files', 'GET');
+}
+
+async function getCurrentFiles() {
+  await triggerDeletionOfExpiredFiles();
+  return getFilesFromBackend();
 }
 
 const App = () => {
@@ -23,11 +37,12 @@ const App = () => {
   const textInputRef = React.useRef<HTMLDivElement>(null);
 
   const debouncedCall = React.useCallback(
-    debounce(callBackendAPI, 250, { leading: true }),
+    debounce(getCurrentFiles, 250, { leading: true }),
     [],
   );
 
   React.useEffect(() => {
+    console.log('effect triggered!');
     const resp = debouncedCall();
     while (resp === undefined) {
       throw Error('TODO');
