@@ -10,7 +10,7 @@ import FilesDB from './FilesDB';
 import File from './File';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
-const filesdb = new FilesDB('./sqlite/baton_dev.db');
+const filesDB = new FilesDB('./sqlite/baton_dev.db');
 const app = express();
 const port = 8080;
 
@@ -42,7 +42,7 @@ function sendErr(res: express.Response, msg: string, details?: Error | object) {
 
 // For the react app to hit.
 app.get('/files', (_, res) => {
-  const files = filesdb.getAllFiles();
+  const files = filesDB.getAllFiles();
   res.send({
     files,
   });
@@ -64,7 +64,7 @@ app.post('/upload', (req, res) => {
     fileData
       .mv(`./uploaded/${file.id}${path.extname(file.name)}`)
       .then(() => {
-        const numChanged = filesdb.addFile(file);
+        const numChanged = filesDB.addFile(file);
         if (numChanged === 1) {
           sendErr(res, 'failed to persist upload to metadata');
         } else {
@@ -90,7 +90,7 @@ app.delete('/delete/:id', (req, res) => {
     params: { id },
   } = req;
 
-  if (filesdb.deleteFile(id) !== 1) {
+  if (filesDB.deleteFile(id) !== 1) {
     sendErr(res, `failed to delete file`, { id });
   } else {
     res.send({ id });
@@ -98,7 +98,7 @@ app.delete('/delete/:id', (req, res) => {
 });
 
 app.delete('/deleteexpired', (_req, _res) => {
-  filesdb.deleteExpiredFiles();
+  filesDB.deleteExpiredFiles();
 });
 
 app.get('/download/:id', (req, res) => {
@@ -106,7 +106,7 @@ app.get('/download/:id', (req, res) => {
     params: { id },
   } = req;
 
-  const file = filesdb.getFile(id);
+  const file = filesDB.getFile(id);
 
   const fullpath = `${path.join(
     process.cwd(),
