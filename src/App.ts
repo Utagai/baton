@@ -1,7 +1,7 @@
 import pino from 'pino';
 
 import FilesDB from './FilesDB';
-import AppFactory from './Server';
+import AppFactory from './AppFactory';
 
 // TODO: These things should be configurable. Environment variables are probably
 // sufficient for all of these, since there aren't many of them.

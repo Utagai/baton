@@ -2,7 +2,7 @@ import request from 'supertest';
 import pino from 'pino';
 
 import FilesDB from './FilesDB';
-import AppFactory from './Server';
+import AppFactory from './AppFactory';
 
 function getTestAppFactory(): AppFactory {
   const logger = pino({ level: 'debug' });
