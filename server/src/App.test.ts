@@ -4,9 +4,13 @@ import pino from 'pino';
 import FilesDB from './FilesDB';
 import AppFactory from './AppFactory';
 
+function getTestFilesDB(): FilesDB {
+  return new FilesDB('./sqlite/baton_test.db');
+}
+
 function getTestAppFactory(): AppFactory {
   const logger = pino({ level: 'debug' });
-  const filesDB = new FilesDB('./sqlite/baton_test.db');
+  const filesDB = getTestFilesDB();
   const fileUploadPath = './uploaded-test/';
   const defaultFileLifetimeInDays = 1;
   return new AppFactory(
@@ -17,7 +21,15 @@ function getTestAppFactory(): AppFactory {
   );
 }
 
-test('GET /files', async () => {
+test('GET /files (empty)', async () => {
   const app = getTestAppFactory().createApp();
-  await request(app).get('/files').expect(200);
+  await request(app)
+    .get('/files')
+    .expect(200)
+    .expect('Content-Type', /json/)
+    .then((resp) => {
+      console.log('resp body:', resp.body);
+      expect(Array.isArray(resp.body.files)).toBeTruthy();
+      expect(resp.body.files.length).toBe(0);
+    });
 });

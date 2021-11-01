@@ -9,9 +9,11 @@ import expressPino from 'express-pino-logger';
 import FilesDB from './FilesDB';
 import File from './File';
 
-// Server wraps an express app and hides much of the actual configuration of the
-// express server, namely, its routes and some dependent components like the
-// sqlite client.
+// AppFactory hides much of the actual configuration of the express server,
+// namely, its routes and some dependent components like the sqlite client.
+// This serves to keep the main file where we start listening on the app
+// relatively clean, and most importantly, lets our tests create express apps on
+// the fly.
 class AppFactory {
   logger: pino.Logger;
 
