@@ -90,49 +90,51 @@ test('GET files non empty', async () => {
     });
 });
 
-test('upload', async () => {
-  const { currentTestName } = expect.getState();
-  const app = getTestApp(expect.getState().currentTestName);
+describe('upload', () => {
+  test('successful', async () => {
+    const { currentTestName } = expect.getState();
+    const app = getTestApp(expect.getState().currentTestName);
 
-  const dataToUpload = Buffer.from('hello world!');
-  const idToUpload = `${currentTestName}_test.txt`;
-  await request(app)
-    .post('/upload')
-    .field('filename', currentTestName)
-    .field('filesize', '100')
-    .field('id', idToUpload)
-    .attach('file', dataToUpload)
-    .expect(200)
-    .expect('Content-Type', /json/)
-    .then((resp) => {
-      console.log('resp body:', resp.body);
-      expect(resp.body).toEqual({
-        name: currentTestName,
-        size: 100,
-        id: idToUpload,
-        uploadTime: expect.any(String),
-        expireTime: expect.any(String),
+    const dataToUpload = Buffer.from('hello world!');
+    const idToUpload = `${currentTestName}_test.txt`;
+    await request(app)
+      .post('/upload')
+      .field('filename', currentTestName)
+      .field('filesize', '100')
+      .field('id', idToUpload)
+      .attach('file', dataToUpload)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .then((resp) => {
+        console.log('resp body:', resp.body);
+        expect(resp.body).toEqual({
+          name: currentTestName,
+          size: 100,
+          id: idToUpload,
+          uploadTime: expect.any(String),
+          expireTime: expect.any(String),
+        });
+        // Now, be a bit more strict with testing of our dates. We won't expect a
+        // perfect match of course, but we'd like to verify that the server is
+        // setting reasonable upload & expiration times. Namely, that isn't, for
+        // example, setting the expiration time to 500 years in the future even
+        // though our configured expiration time is 1 day.
+        // NOTE: The parameter of -1 we pass to toBeCloseTo() translates to a
+        // generous 5 second tolerance.
+        expect(Date.parse(resp.body.uploadTime) / 1000.0).toBeCloseTo(
+          new Date().getTime() / 1000.0,
+          -1,
+        );
+        expect(Date.parse(resp.body.expireTime) / 1000.0).toBeCloseTo(
+          addDays(new Date(), testDefaultFileLifetime).getTime() / 1000.0,
+          -1,
+        );
+
+        // Finally, confirm that the data we wanted to upload has been uploaded:
+        const actualData = fs
+          .readFileSync(path.join(testUploadPath, idToUpload), 'utf8')
+          .toString();
+        expect(actualData).toEqual(dataToUpload.toString());
       });
-      // Now, be a bit more strict with testing of our dates. We won't expect a
-      // perfect match of course, but we'd like to verify that the server is
-      // setting reasonable upload & expiration times. Namely, that isn't, for
-      // example, setting the expiration time to 500 years in the future even
-      // though our configured expiration time is 1 day.
-      // NOTE: The parameter of -1 we pass to toBeCloseTo() translates to a
-      // generous 5 second tolerance.
-      expect(Date.parse(resp.body.uploadTime) / 1000.0).toBeCloseTo(
-        new Date().getTime() / 1000.0,
-        -1,
-      );
-      expect(Date.parse(resp.body.expireTime) / 1000.0).toBeCloseTo(
-        addDays(new Date(), testDefaultFileLifetime).getTime() / 1000.0,
-        -1,
-      );
-
-      // Finally, confirm that the data we wanted to upload has been uploaded:
-      const actualData = fs
-        .readFileSync(path.join(testUploadPath, idToUpload), 'utf8')
-        .toString();
-      expect(actualData).toEqual(dataToUpload.toString());
-    });
+  });
 });
