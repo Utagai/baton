@@ -2,5 +2,6 @@ dist/
 client/node_modules/*
 server/node_modules/*
 uploaded/
+uploaded-test/
 sqlite/
 coverage/
