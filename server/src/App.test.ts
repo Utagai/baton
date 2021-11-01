@@ -161,4 +161,26 @@ describe('upload', () => {
         });
       });
   });
+
+  test('delete file by id', async () => {
+    const { currentTestName } = expect.getState();
+    const filesDB = getTestFilesDB(currentTestName);
+    const fileToUpload = {
+      name: currentTestName,
+      size: 100,
+      id: currentTestName,
+      uploadTime: new Date(),
+      expireTime: addDays(new Date(), testDefaultFileLifetime),
+    };
+    expect(filesDB.addFile(fileToUpload)).toBe(1); // Expect to have this one file's metadata uploaded.
+
+    const app = getTestApp(currentTestName);
+    await request(app)
+      .delete(`/delete/${currentTestName}`)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .then((resp) => {
+        expect(resp.body.id).toBe(currentTestName);
+      });
+  });
 });
