@@ -163,8 +163,57 @@ describe('upload', () => {
         });
       });
   });
+});
 
-  test('delete file by id', async () => {
+test('delete file by id', async () => {
+  const { currentTestName } = expect.getState();
+  const filesDB = getTestFilesDB(currentTestName);
+  const testFile = {
+    name: currentTestName,
+    size: 100,
+    id: currentTestName,
+    uploadTime: new Date(),
+    expireTime: addDays(new Date(), testDefaultFileLifetime),
+  };
+  expect(filesDB.addFile(testFile)).toBe(1);
+
+  const app = getTestApp(currentTestName);
+  await request(app)
+    .delete(`/delete/${testFile.id}`)
+    .expect(200)
+    .expect('Content-Type', /json/)
+    .then((resp) => {
+      expect(resp.body.id).toBe(currentTestName);
+    });
+});
+
+test('delete file by id', async () => {
+  const { currentTestName } = expect.getState();
+  const filesDB = getTestFilesDB(currentTestName);
+  const testFile = {
+    name: currentTestName,
+    size: 100,
+    id: currentTestName,
+    uploadTime: new Date(),
+    // Add a negated version so that this file is guaranteed to be considered expired.
+    expireTime: addDays(new Date(), -testDefaultFileLifetime),
+  };
+  expect(filesDB.addFile(testFile)).toBe(1);
+
+  const app = getTestApp(currentTestName);
+  await request(app)
+    .delete('/deleteexpired')
+    .expect(200)
+    .expect('Content-Type', /json/)
+    .then(() => {
+      // This file should no longer exist since it is expired and we
+      // presumably deleted all of the expired files.
+      expect(filesDB.getFile(currentTestName)).toBeUndefined();
+    });
+});
+
+describe('download', () => {
+  test('file that does not exist', async () => {
     const { currentTestName } = expect.getState();
     const filesDB = getTestFilesDB(currentTestName);
     const testFile = {
@@ -178,96 +227,47 @@ describe('upload', () => {
 
     const app = getTestApp(currentTestName);
     await request(app)
-      .delete(`/delete/${testFile.id}`)
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .then((resp) => {
-        expect(resp.body.id).toBe(currentTestName);
+      .get(`/download/${testFile.id}`)
+      .expect(404)
+      .then(() => {
+        console.log('HELLO!?!??!!?');
       });
   });
 
-  test('delete file by id', async () => {
+  test('file that does exist', async () => {
     const { currentTestName } = expect.getState();
     const filesDB = getTestFilesDB(currentTestName);
+    const testID = `${currentTestName}_test.txt`.replace(/ /g, '_');
     const testFile = {
       name: currentTestName,
       size: 100,
-      id: currentTestName,
+      id: testID,
       uploadTime: new Date(),
-      // Add a negated version so that this file is guaranteed to be considered expired.
-      expireTime: addDays(new Date(), -testDefaultFileLifetime),
+      expireTime: addDays(new Date(), testDefaultFileLifetime),
     };
     expect(filesDB.addFile(testFile)).toBe(1);
 
+    // We also need to create the file so that the server can find it.
+    const fileContents = 'hello world!';
+    fs.writeFileSync(path.join(testUploadPath, testID), fileContents);
+
+    let downloadedData = '';
     const app = getTestApp(currentTestName);
     await request(app)
-      .delete('/deleteexpired')
+      .get(`/download/${testFile.id}`)
+      .buffer()
+      .parse((res, callback) => {
+        res.setEncoding('binary');
+        res.on('data', (chunk) => {
+          downloadedData += chunk;
+        });
+        res.on('end', () => {
+          callback(null, Buffer.from(downloadedData, 'binary'));
+        });
+      })
       .expect(200)
-      .expect('Content-Type', /json/)
       .then(() => {
-        // This file should no longer exist since it is expired and we
-        // presumably deleted all of the expired files.
-        expect(filesDB.getFile(currentTestName)).toBeUndefined();
+        expect(downloadedData).toEqual(fileContents);
       });
-  });
-
-  describe('download', () => {
-    test('file that does not exist', async () => {
-      const { currentTestName } = expect.getState();
-      const filesDB = getTestFilesDB(currentTestName);
-      const testFile = {
-        name: currentTestName,
-        size: 100,
-        id: currentTestName,
-        uploadTime: new Date(),
-        expireTime: addDays(new Date(), testDefaultFileLifetime),
-      };
-      expect(filesDB.addFile(testFile)).toBe(1);
-
-      const app = getTestApp(currentTestName);
-      await request(app)
-        .get(`/download/${testFile.id}`)
-        .expect(404)
-        .then(() => {
-          console.log('HELLO!?!??!!?');
-        });
-    });
-
-    test('file that does exist', async () => {
-      const { currentTestName } = expect.getState();
-      const filesDB = getTestFilesDB(currentTestName);
-      const testID = `${currentTestName}_test.txt`.replace(/ /g, '_');
-      const testFile = {
-        name: currentTestName,
-        size: 100,
-        id: testID,
-        uploadTime: new Date(),
-        expireTime: addDays(new Date(), testDefaultFileLifetime),
-      };
-      expect(filesDB.addFile(testFile)).toBe(1);
-
-      // We also need to create the file so that the server can find it.
-      const fileContents = 'hello world!';
-      fs.writeFileSync(path.join(testUploadPath, testID), fileContents);
-
-      let downloadedData = '';
-      const app = getTestApp(currentTestName);
-      await request(app)
-        .get(`/download/${testFile.id}`)
-        .buffer()
-        .parse((res, callback) => {
-          res.setEncoding('binary');
-          res.on('data', (chunk) => {
-            downloadedData += chunk;
-          });
-          res.on('end', () => {
-            callback(null, Buffer.from(downloadedData, 'binary'));
-          });
-        })
-        .expect(200)
-        .then(() => {
-          expect(downloadedData).toEqual(fileContents);
-        });
-    });
   });
 });
