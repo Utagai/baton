@@ -236,8 +236,8 @@ describe('download', () => {
     await request(app)
       .get(`/download/${testFile.id}`)
       .expect(404)
-      .then(() => {
-        console.log('HELLO!?!??!!?');
+      .then((resp) => {
+        expect(resp.body.msg).toBe('Not Found');
       });
   });
 
