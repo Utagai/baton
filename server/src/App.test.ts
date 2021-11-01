@@ -172,11 +172,11 @@ describe('upload', () => {
       uploadTime: new Date(),
       expireTime: addDays(new Date(), testDefaultFileLifetime),
     };
-    expect(filesDB.addFile(fileToUpload)).toBe(1); // Expect to have this one file's metadata uploaded.
+    expect(filesDB.addFile(fileToUpload)).toBe(1);
 
     const app = getTestApp(currentTestName);
     await request(app)
-      .delete(`/delete/${currentTestName}`)
+      .delete(`/delete/${fileToUpload.id}`)
       .expect(200)
       .expect('Content-Type', /json/)
       .then((resp) => {
@@ -195,7 +195,7 @@ describe('upload', () => {
       // Add a negated version so that this file is guaranteed to be considered expired.
       expireTime: addDays(new Date(), -testDefaultFileLifetime),
     };
-    expect(filesDB.addFile(fileToUpload)).toBe(1); // Expect to have this one file's metadata uploaded.
+    expect(filesDB.addFile(fileToUpload)).toBe(1);
 
     const app = getTestApp(currentTestName);
     await request(app)
@@ -207,5 +207,27 @@ describe('upload', () => {
         // presumably deleted all of the expired files.
         expect(filesDB.getFile(currentTestName)).toBeUndefined();
       });
+  });
+
+  describe('download', () => {
+    test('file that does not exist', async () => {
+      const { currentTestName } = expect.getState();
+      const filesDB = getTestFilesDB(currentTestName);
+      const fileToUpload = {
+        name: currentTestName,
+        size: 100,
+        id: currentTestName,
+        uploadTime: new Date(),
+        expireTime: addDays(new Date(), testDefaultFileLifetime),
+      };
+      expect(filesDB.addFile(fileToUpload)).toBe(1);
+
+      const app = getTestApp(currentTestName);
+      await request(app)
+        .delete(`/download/${fileToUpload.id}`)
+        .expect(404)
+        .expect('Content-Type', /text/)
+        .then(() => {});
+    });
   });
 });
