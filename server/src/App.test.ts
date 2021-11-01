@@ -137,4 +137,28 @@ describe('upload', () => {
         expect(actualData).toEqual(dataToUpload.toString());
       });
   });
+
+  test('fail on multiple files', async () => {
+    const { currentTestName } = expect.getState();
+    const app = getTestApp(expect.getState().currentTestName);
+
+    const dataToUpload = Buffer.from('hello world!');
+    const idToUpload = `${currentTestName}_test.txt`;
+    await request(app)
+      .post('/upload')
+      .field('filename', currentTestName)
+      .field('filesize', '100')
+      .field('id', idToUpload)
+      .attach('file', dataToUpload)
+      .attach('file', dataToUpload) // This second attachment should cause this to fail.
+      .expect(500)
+      .expect('Content-Type', /json/)
+      .then((resp) => {
+        console.log('resp body:', resp.body);
+        expect(resp.body).toEqual({
+          msg: 'cannot upload more than 1 file',
+          attemptedCount: 2,
+        });
+      });
+  });
 });

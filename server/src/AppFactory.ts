@@ -31,6 +31,7 @@ function AppFactory(
     msg: string,
     details?: Error | object,
   ) => {
+    res.set('Content-Type', 'application/json');
     logger.error(details, msg);
     // TODO: We may also want to conditionally show errors depending on if we are
     // developing locally vs. in production.
