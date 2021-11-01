@@ -20,7 +20,7 @@ class FilesDB {
       // If the table does not yet exist, create it.
       this.db
         .prepare(
-          `create table ${tableName}(id varchar, filename varchar, filesize int, uploadTime date, expireTime date)`,
+          `create table ${tableName}(id varchar, name varchar, size int, uploadTime date, expireTime date)`,
         )
         .run();
     }
@@ -39,13 +39,13 @@ class FilesDB {
 
   addFile(f: File): number {
     const insertStmt = this.db.prepare(
-      `INSERT INTO ${this.tableName} (id, filename, filesize, uploadTime, expireTime) ` +
-        'VALUES(@id, @filename, @filesize, @uploadTime, @expireTime)',
+      `INSERT INTO ${this.tableName} (id, name, size, uploadTime, expireTime) ` +
+        'VALUES(@id, @name, @size, @uploadTime, @expireTime)',
     );
     return insertStmt.run({
       id: f.id,
-      filename: f.name,
-      filesize: f.size,
+      name: f.name,
+      size: f.size,
       uploadTime: f.uploadTime.toISOString(),
       expireTime: f.expireTime.toISOString(),
     }).changes;
