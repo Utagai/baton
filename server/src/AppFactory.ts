@@ -47,6 +47,7 @@ function AppFactory(
       res.status(500).send(JSON.stringify({ msg }));
     } else {
       // TODO: We are not handling the case where details has a field named err.
+      console.log('DETAILS: ', JSON.stringify({ msg, ...details }));
       res.status(500).send(JSON.stringify({ msg, ...details }));
     }
   };
@@ -89,10 +90,6 @@ function AppFactory(
           sendErr(res, `failed to upload files`, err);
         });
     } else {
-      logger.error(
-        'client attempted to upload multiple files (%d)',
-        fileData.length,
-      );
       sendErr(res, `cannot upload more than 1 file`, {
         attemptedCount: fileData.length,
       });
@@ -139,8 +136,15 @@ function AppFactory(
       id,
     )}${path.extname(file.name)}`;
     res.download(fullpath, file.name, (err) => {
-      logger.error(err, 'failed to send download to client');
-      sendErr(res, 'failed to return a download', err);
+      logger.error(err, 'failed to return a download');
+      if (!res.headersSent) {
+        if (err.message === 'Not Found') {
+          res.status(404);
+        } else {
+          res.status(500);
+        }
+        res.send({ msg: err.message });
+      }
     });
   });
 

@@ -60,14 +60,14 @@ test('GET files empty', async () => {
 test('GET files non empty', async () => {
   const { currentTestName } = expect.getState();
   const filesDB = getTestFilesDB(currentTestName);
-  const fileToUpload = {
+  const testFile = {
     name: currentTestName,
     size: 100,
     id: currentTestName,
     uploadTime: new Date(),
     expireTime: addDays(new Date(), testDefaultFileLifetime),
   };
-  expect(filesDB.addFile(fileToUpload)).toBe(1); // Expect to have this one file's metadata uploaded.
+  expect(filesDB.addFile(testFile)).toBe(1); // Expect to have this one file's metadata uploaded.
 
   const app = getTestApp(currentTestName);
   await request(app)
@@ -77,15 +77,15 @@ test('GET files non empty', async () => {
     .then((resp) => {
       expect(Array.isArray(resp.body.files)).toBeTruthy();
       expect(resp.body.files.length).toBe(1);
-      // Ideally, we'd just check .toBe(fileToUpload), but remember that this
+      // Ideally, we'd just check .toBe(testFile), but remember that this
       // resp is JSON, so the dates are not Date objects but strings. There are
       // some other approaches, e.g. making a new proper File object or maybe
       // some custom matcher thing, but this is dead simple and the number of
       // fields to check 'specially' is quite small.
       expect(resp.body.files[0]).toEqual({
-        ...fileToUpload,
-        uploadTime: fileToUpload.uploadTime.toISOString(),
-        expireTime: fileToUpload.expireTime.toISOString(),
+        ...testFile,
+        uploadTime: testFile.uploadTime.toISOString(),
+        expireTime: testFile.expireTime.toISOString(),
       });
     });
 });
@@ -96,12 +96,15 @@ describe('upload', () => {
     const app = getTestApp(expect.getState().currentTestName);
 
     const dataToUpload = Buffer.from('hello world!');
-    const idToUpload = `${currentTestName}_test.txt`;
+    // Make it a 'valid' filename (technically we don't have to do this to make
+    // it valid but it makes it look a tiny bit nicer on the filesystem when you
+    // run `ls`).
+    const testID = `${currentTestName}_test.txt`.replace(/ /g, '_');
     await request(app)
       .post('/upload')
       .field('filename', currentTestName)
       .field('filesize', '100')
-      .field('id', idToUpload)
+      .field('id', testID)
       .attach('file', dataToUpload)
       .expect(200)
       .expect('Content-Type', /json/)
@@ -110,7 +113,7 @@ describe('upload', () => {
         expect(resp.body).toEqual({
           name: currentTestName,
           size: 100,
-          id: idToUpload,
+          id: testID,
           uploadTime: expect.any(String),
           expireTime: expect.any(String),
         });
@@ -132,7 +135,7 @@ describe('upload', () => {
 
         // Finally, confirm that the data we wanted to upload has been uploaded:
         const actualData = fs
-          .readFileSync(path.join(testUploadPath, idToUpload), 'utf8')
+          .readFileSync(path.join(testUploadPath, testID), 'utf8')
           .toString();
         expect(actualData).toEqual(dataToUpload.toString());
       });
@@ -143,12 +146,11 @@ describe('upload', () => {
     const app = getTestApp(expect.getState().currentTestName);
 
     const dataToUpload = Buffer.from('hello world!');
-    const idToUpload = `${currentTestName}_test.txt`;
     await request(app)
       .post('/upload')
       .field('filename', currentTestName)
       .field('filesize', '100')
-      .field('id', idToUpload)
+      .field('id', currentTestName)
       .attach('file', dataToUpload)
       .attach('file', dataToUpload) // This second attachment should cause this to fail.
       .expect(500)
@@ -165,18 +167,18 @@ describe('upload', () => {
   test('delete file by id', async () => {
     const { currentTestName } = expect.getState();
     const filesDB = getTestFilesDB(currentTestName);
-    const fileToUpload = {
+    const testFile = {
       name: currentTestName,
       size: 100,
       id: currentTestName,
       uploadTime: new Date(),
       expireTime: addDays(new Date(), testDefaultFileLifetime),
     };
-    expect(filesDB.addFile(fileToUpload)).toBe(1);
+    expect(filesDB.addFile(testFile)).toBe(1);
 
     const app = getTestApp(currentTestName);
     await request(app)
-      .delete(`/delete/${fileToUpload.id}`)
+      .delete(`/delete/${testFile.id}`)
       .expect(200)
       .expect('Content-Type', /json/)
       .then((resp) => {
@@ -187,7 +189,7 @@ describe('upload', () => {
   test('delete file by id', async () => {
     const { currentTestName } = expect.getState();
     const filesDB = getTestFilesDB(currentTestName);
-    const fileToUpload = {
+    const testFile = {
       name: currentTestName,
       size: 100,
       id: currentTestName,
@@ -195,7 +197,7 @@ describe('upload', () => {
       // Add a negated version so that this file is guaranteed to be considered expired.
       expireTime: addDays(new Date(), -testDefaultFileLifetime),
     };
-    expect(filesDB.addFile(fileToUpload)).toBe(1);
+    expect(filesDB.addFile(testFile)).toBe(1);
 
     const app = getTestApp(currentTestName);
     await request(app)
@@ -213,21 +215,59 @@ describe('upload', () => {
     test('file that does not exist', async () => {
       const { currentTestName } = expect.getState();
       const filesDB = getTestFilesDB(currentTestName);
-      const fileToUpload = {
+      const testFile = {
         name: currentTestName,
         size: 100,
         id: currentTestName,
         uploadTime: new Date(),
         expireTime: addDays(new Date(), testDefaultFileLifetime),
       };
-      expect(filesDB.addFile(fileToUpload)).toBe(1);
+      expect(filesDB.addFile(testFile)).toBe(1);
 
       const app = getTestApp(currentTestName);
       await request(app)
-        .delete(`/download/${fileToUpload.id}`)
+        .get(`/download/${testFile.id}`)
         .expect(404)
-        .expect('Content-Type', /text/)
-        .then(() => {});
+        .then(() => {
+          console.log('HELLO!?!??!!?');
+        });
+    });
+
+    test('file that does exist', async () => {
+      const { currentTestName } = expect.getState();
+      const filesDB = getTestFilesDB(currentTestName);
+      const testID = `${currentTestName}_test.txt`.replace(/ /g, '_');
+      const testFile = {
+        name: currentTestName,
+        size: 100,
+        id: testID,
+        uploadTime: new Date(),
+        expireTime: addDays(new Date(), testDefaultFileLifetime),
+      };
+      expect(filesDB.addFile(testFile)).toBe(1);
+
+      // We also need to create the file so that the server can find it.
+      const fileContents = 'hello world!';
+      fs.writeFileSync(path.join(testUploadPath, testID), fileContents);
+
+      let downloadedData = '';
+      const app = getTestApp(currentTestName);
+      await request(app)
+        .get(`/download/${testFile.id}`)
+        .buffer()
+        .parse((res, callback) => {
+          res.setEncoding('binary');
+          res.on('data', (chunk) => {
+            downloadedData += chunk;
+          });
+          res.on('end', () => {
+            callback(null, Buffer.from(downloadedData, 'binary'));
+          });
+        })
+        .expect(200)
+        .then(() => {
+          expect(downloadedData).toEqual(fileContents);
+        });
     });
   });
 });
