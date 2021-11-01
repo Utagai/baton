@@ -58,13 +58,13 @@ class FilesDB {
     return deleteStmt.run({ id }).changes;
   }
 
-  deleteExpiredFiles() {
+  deleteExpiredFiles(): number {
     const deleteStmt = this.db.prepare(
       `DELETE FROM ${this.tableName} WHERE @now > expireTime`,
     );
     // Normally we return the number of rows deleted but there's no point.
     // Sometimes we honestly won't delete anything and other times we will.
-    deleteStmt.run({ now: new Date().toISOString() });
+    return deleteStmt.run({ now: new Date().toISOString() }).changes;
   }
 }
 
