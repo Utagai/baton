@@ -7,7 +7,7 @@
     "build": "tsc",
     "prestart": "npm run build",
     "start": "node .",
-    "serve": "nodemon --ignore ./client/ --ignore ./uploaded/ src/App.ts | pino-pretty",
+    "serve": "nodemon --ignore ./client/ --ignore ./uploaded/ src/App.ts | pino-pretty -c",
     "test": "jest"
   },
   "author": "",
