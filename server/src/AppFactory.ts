@@ -107,11 +107,12 @@ function AppFactory(
       params: { id },
     } = req;
 
-    if (filesDB.deleteFile(id) !== 1) {
-      sendErr(res, `failed to delete file`, { id });
-    } else {
-      res.send({ id });
-    }
+    // We do not verify the number of deletions here because the expired file
+    // pruning happens asynchronously to this. What that means is that the user
+    // could get into a race where they delete a file that was just pruned but
+    // the UI had not yet updated. This would cause an error when it shouldn't.
+    filesDB.deleteFile(id);
+    res.send({ id });
   });
 
   // /deleteexpired triggers deletion of expired files. Expired files are not
