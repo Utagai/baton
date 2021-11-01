@@ -11,14 +11,13 @@ const fileUploadPath = './uploaded/';
 const defaultFileLifetimeInDays = 7;
 const port = 8080;
 
-const appFactory = new AppFactory(
+const app = AppFactory(
   logger,
   filesDB,
   fileUploadPath,
   defaultFileLifetimeInDays,
 );
 
-const app = appFactory.createApp();
 // Starts the express server.
 app.listen(port, () => {
   logger.info(`server started at http://localhost:${port}`);
