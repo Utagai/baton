@@ -5,22 +5,41 @@ import File from './File';
 class FilesDB {
   db: sqlite.Database;
 
-  constructor(sqliteDBPath: string) {
+  tableName: string;
+
+  constructor(sqliteDBPath: string, tableName: string = 'files') {
     this.db = sqlite(sqliteDBPath);
+    this.tableName = tableName;
+    if (
+      this.db
+        .prepare(
+          `SELECT name FROM sqlite_schema WHERE type = 'table' AND name='${tableName}'`,
+        )
+        .get() === undefined
+    ) {
+      // If the table does not yet exist, create it.
+      this.db
+        .prepare(
+          `create table ${tableName}(id varchar, filename varchar, filesize int, uploadTime date, expireTime date)`,
+        )
+        .run();
+    }
   }
 
   getAllFiles(): File[] {
-    return this.db.prepare('SELECT * FROM files').all();
+    return this.db.prepare(`SELECT * FROM ${this.tableName}`).all();
   }
 
   getFile(id: string): File {
-    const selectStmt = this.db.prepare('SELECT * FROM files WHERE id = @id');
+    const selectStmt = this.db.prepare(
+      `SELECT * FROM ${this.tableName} WHERE id = @id`,
+    );
     return selectStmt.get({ id });
   }
 
   addFile(f: File): number {
     const insertStmt = this.db.prepare(
-      'INSERT INTO files (id, filename, filesize, uploadTime, expireTime) ' +
+      `INSERT INTO ${this.tableName} (id, filename, filesize, uploadTime, expireTime) ` +
         'VALUES(@id, @filename, @filesize, @uploadTime, @expireTime)',
     );
     return insertStmt.run({
@@ -33,13 +52,15 @@ class FilesDB {
   }
 
   deleteFile(id: string): number {
-    const deleteStmt = this.db.prepare('DELETE FROM files WHERE id = @id');
+    const deleteStmt = this.db.prepare(
+      `DELETE FROM ${this.tableName} WHERE id = @id`,
+    );
     return deleteStmt.run({ id }).changes;
   }
 
   deleteExpiredFiles() {
     const deleteStmt = this.db.prepare(
-      'DELETE FROM files WHERE @now > expireTime',
+      `DELETE FROM ${this.tableName} WHERE @now > expireTime`,
     );
     // Normally we return the number of rows deleted but there's no point.
     // Sometimes we honestly won't delete anything and other times we will.

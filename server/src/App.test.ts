@@ -4,25 +4,30 @@ import pino from 'pino';
 import FilesDB from './FilesDB';
 import AppFactory from './AppFactory';
 
-function getTestFilesDB(): FilesDB {
-  return new FilesDB('./sqlite/baton_test.db');
-}
+const testLogLevel = 'debug';
+const testSQLiteDBFile = './sqlite/baton_test.db';
+const testUploadPath = './uploaded-test/';
 
-function getTestAppFactory(): AppFactory {
-  const logger = pino({ level: 'debug' });
-  const filesDB = getTestFilesDB();
-  const fileUploadPath = './uploaded-test/';
+function getTestApp(currentTestName: string) {
+  // Make the logs pretty to make debugging test failures easier.
+  const logger = pino({
+    level: testLogLevel,
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
+      },
+    },
+  });
+  const testTableName = currentTestName.replace(/ /g, '_');
+  const filesDB = new FilesDB(testSQLiteDBFile, testTableName);
+  const fileUploadPath = testUploadPath;
   const defaultFileLifetimeInDays = 1;
-  return new AppFactory(
-    logger,
-    filesDB,
-    fileUploadPath,
-    defaultFileLifetimeInDays,
-  );
+  return AppFactory(logger, filesDB, fileUploadPath, defaultFileLifetimeInDays);
 }
 
-test('GET /files (empty)', async () => {
-  const app = getTestAppFactory().createApp();
+test('GET files empty', async () => {
+  const app = getTestApp(expect.getState().currentTestName);
   await request(app)
     .get('/files')
     .expect(200)
