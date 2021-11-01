@@ -183,4 +183,29 @@ describe('upload', () => {
         expect(resp.body.id).toBe(currentTestName);
       });
   });
+
+  test('delete file by id', async () => {
+    const { currentTestName } = expect.getState();
+    const filesDB = getTestFilesDB(currentTestName);
+    const fileToUpload = {
+      name: currentTestName,
+      size: 100,
+      id: currentTestName,
+      uploadTime: new Date(),
+      // Add a negated version so that this file is guaranteed to be considered expired.
+      expireTime: addDays(new Date(), -testDefaultFileLifetime),
+    };
+    expect(filesDB.addFile(fileToUpload)).toBe(1); // Expect to have this one file's metadata uploaded.
+
+    const app = getTestApp(currentTestName);
+    await request(app)
+      .delete('/deleteexpired')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .then(() => {
+        // This file should no longer exist since it is expired and we
+        // presumably deleted all of the expired files.
+        expect(filesDB.getFile(currentTestName)).toBeUndefined();
+      });
+  });
 });

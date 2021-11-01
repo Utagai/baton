@@ -30,7 +30,7 @@ class FilesDB {
     return this.db.prepare(`SELECT * FROM ${this.tableName}`).all();
   }
 
-  getFile(id: string): File {
+  getFile(id: string): File | undefined {
     const selectStmt = this.db.prepare(
       `SELECT * FROM ${this.tableName} WHERE id = @id`,
     );

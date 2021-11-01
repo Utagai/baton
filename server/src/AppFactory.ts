@@ -24,6 +24,11 @@ function AppFactory(
   app.use(express.json());
   app.use(fileUpload());
   app.use(expressPino({ logger }));
+  // Make it so that we only ever return application/json by default.
+  app.use((_req, res, next) => {
+    res.contentType('application/json');
+    next();
+  });
 
   // sendErr is a tiny helper for returning JSON errors from the express endpoints.
   const sendErr = (
@@ -31,7 +36,6 @@ function AppFactory(
     msg: string,
     details?: Error | object,
   ) => {
-    res.set('Content-Type', 'application/json');
     logger.error(details, msg);
     // TODO: We may also want to conditionally show errors depending on if we are
     // developing locally vs. in production.
@@ -114,8 +118,9 @@ function AppFactory(
   // deleted on disk.
   // TODO: Deletion of expired data should actually happen in the background of
   // this server or some separate process.
-  app.delete('/deleteexpired', (_req, _res) => {
+  app.delete('/deleteexpired', (_req, res) => {
     filesDB.deleteExpiredFiles();
+    res.send({});
   });
 
   // /download/:id returns the file specified by :id as a downloadable file. This
