@@ -1,7 +1,7 @@
 import pino from 'pino';
 
 import FilesDB from './FilesDB';
-import Server from './Server';
+import AppFactory from './Server';
 
 // TODO: These things should be configurable. Environment variables are probably
 // sufficient for all of these, since there aren't many of them.
@@ -11,14 +11,15 @@ const fileUploadPath = './uploaded/';
 const defaultFileLifetimeInDays = 7;
 const port = 8080;
 
-const server = new Server(
+const appFactory = new AppFactory(
   logger,
   filesDB,
   fileUploadPath,
   defaultFileLifetimeInDays,
 );
 
-// Starts the server.
-server.listen(port, () => {
+const app = appFactory.createApp();
+// Starts the express server.
+app.listen(port, () => {
   logger.info(`server started at http://localhost:${port}`);
 });

@@ -12,9 +12,7 @@ import File from './File';
 // Server wraps an express app and hides much of the actual configuration of the
 // express server, namely, its routes and some dependent components like the
 // sqlite client.
-class Server {
-  app: express.Express;
-
+class AppFactory {
   logger: pino.Logger;
 
   filesDB: FilesDB;
@@ -33,14 +31,17 @@ class Server {
     this.filesDB = filesDB;
     this.fileUploadPath = fileUploadPath;
     this.fileLifetimeInDays = fileLifetimeInDays;
+  }
 
-    this.app = express();
-    this.app.use(express.json());
-    this.app.use(fileUpload());
-    this.app.use(expressPino({ logger }));
+  // TODO: We need to do something better than this.
+  createApp(): express.Express {
+    const app = express();
+    app.use(express.json());
+    app.use(fileUpload());
+    app.use(expressPino({ logger: this.logger }));
 
     // /files returns a listing of all the files, _including_ expired files.
-    this.app.get('/files', (_, res) => {
+    app.get('/files', (_, res) => {
       const files = this.filesDB.getAllFiles();
       res.send({
         files,
@@ -50,7 +51,7 @@ class Server {
     // /upload uploads the specified file contents. Metadata about the file is
     // created at this time as well, making the file available for listing/download
     // once this endpoint returns.
-    this.app.post('/upload', (req, res) => {
+    app.post('/upload', (req, res) => {
       const { body: uploadRequest } = req;
       const file: File = {
         name: uploadRequest.filename,
@@ -77,7 +78,7 @@ class Server {
             this.sendErr(res, `failed to upload files`, err);
           });
       } else {
-        logger.error(
+        this.logger.error(
           'client attempted to upload multiple files (%d)',
           fileData.length,
         );
@@ -90,7 +91,7 @@ class Server {
     // /delete/:id deletes the file specified by :id. This does not delete the file
     // on disk.
     // TODO: This _should_ delete the file on disk.
-    this.app.delete('/delete/:id', (req, res) => {
+    app.delete('/delete/:id', (req, res) => {
       const {
         params: { id },
       } = req;
@@ -106,13 +107,13 @@ class Server {
     // deleted on disk.
     // TODO: Deletion of expired data should actually happen in the background of
     // this server or some separate process.
-    this.app.delete('/deleteexpired', (_req, _res) => {
+    app.delete('/deleteexpired', (_req, _res) => {
       this.filesDB.deleteExpiredFiles();
     });
 
     // /download/:id returns the file specified by :id as a downloadable file. This
     // should trigger a download in the user's browser.
-    this.app.get('/download/:id', (req, res) => {
+    app.get('/download/:id', (req, res) => {
       const {
         params: { id },
       } = req;
@@ -125,14 +126,12 @@ class Server {
         id,
       )}${path.extname(file.name)}`;
       res.download(fullpath, file.name, (err) => {
-        logger.error(err, 'failed to send download to client');
+        this.logger.error(err, 'failed to send download to client');
         this.sendErr(res, 'failed to return a download', err);
       });
     });
-  }
 
-  listen(port: number, listener: () => void) {
-    this.app.listen(port, listener);
+    return app;
   }
 
   // sendErr is a tiny helper for returning JSON errors from the express endpoints.
@@ -153,4 +152,4 @@ class Server {
   }
 }
 
-export default Server;
+export default AppFactory;
