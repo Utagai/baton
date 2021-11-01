@@ -45,6 +45,13 @@ beforeEach(() => {
   });
 });
 
+beforeAll(() => {
+  const files = fs.readdirSync(testUploadPath);
+  files.forEach((fi) => {
+    fs.unlinkSync(path.join(testUploadPath, fi));
+  });
+});
+
 test('GET files empty', async () => {
   const app = getTestApp(expect.getState().currentTestName);
   await request(app)
