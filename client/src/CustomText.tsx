@@ -50,7 +50,12 @@ function CustomText(props: {
               body: formData,
             })
               .then(async (resp) => {
-                const f = await resp.json();
+                if (!resp.ok) {
+                  throw new Error('failed to upload custom content');
+                }
+                return resp.json();
+              })
+              .then((f) => {
                 console.log('req res: ', f);
                 addFile(f);
               })
