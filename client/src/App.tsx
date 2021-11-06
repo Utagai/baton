@@ -42,7 +42,6 @@ const App = () => {
   );
 
   React.useEffect(() => {
-    console.log('effect triggered!');
     const resp = debouncedCall();
     while (resp === undefined) {
       throw Error('TODO');
@@ -78,9 +77,6 @@ const App = () => {
             return;
           }
 
-          console.log(
-            `we in here baby: '${textInputRef.current.style.visibility}'`,
-          );
           const currentVisibilitySetting =
             textInputRef.current.style.visibility;
           // I've seen things online where this could sometimes be 'none'
