@@ -23,14 +23,6 @@ describe('app', () => {
     expect(tableElement).toBeInTheDocument();
   });
 
-  test('renders the expected columns on table', () => {
-    render(<App />);
-    const headerElements = screen.getAllByRole('columnheader');
-    headerElements.forEach((elem) => {
-      expect(elem).toBeInTheDocument();
-    });
-  });
-
   test('renders write-a-file button', () => {
     render(<App />);
     const writeAFileButton = screen.getByText('📝 Write a file');
