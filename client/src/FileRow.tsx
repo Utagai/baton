@@ -24,8 +24,10 @@ function handleDownload(id: string, filename: string) {
 }
 
 function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
+  // eslint-disable-next-line react/destructuring-assignment
+  console.log('got back file', props.f);
   const {
-    f: { id, filename, filesize, uploadTime, expireTime },
+    f: { id, name, size, uploadTime, expireTime },
     deleteFile,
   } = props;
 
@@ -41,8 +43,8 @@ function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
   return (
     <tr className="border-b hover:shadow-md" key={id}>
       <th className="font-normal p-1 text-left px-10">
-        <div className="font-bold font-mono">{filename}</div>
-        <div className="text-xs italic">({prettyBytes(filesize)})</div>
+        <div className="font-bold font-mono">{name}</div>
+        <div className="text-xs italic">({prettyBytes(size)})</div>
       </th>
       <th className="font-normal border-b text-left  px-10">
         <div className="italic">{uploadTimeHumanReadable}</div>
@@ -55,7 +57,7 @@ function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
           aria-label="Download"
           type="button"
           onClick={() => {
-            handleDownload(id, filename);
+            handleDownload(id, name);
           }}
           className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-gray-500 hover:text-blue-100"
         >

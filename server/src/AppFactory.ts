@@ -47,7 +47,6 @@ function AppFactory(
       res.status(500).send(JSON.stringify({ msg }));
     } else {
       // TODO: We are not handling the case where details has a field named err.
-      console.log('DETAILS: ', JSON.stringify({ msg, ...details }));
       res.status(500).send(JSON.stringify({ msg, ...details }));
     }
   };

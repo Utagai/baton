@@ -6,8 +6,8 @@
 // variables named 'file'.
 type file = {
   id: string;
-  filename: string;
-  filesize: number;
+  name: string;
+  size: number;
   uploadTime: string;
   expireTime: string;
 };
