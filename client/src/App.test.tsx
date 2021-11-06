@@ -43,29 +43,46 @@ describe('app', () => {
     expect(uploadAFileButton).toBeInTheDocument();
   });
 
-  test('should show text entry UI when write-a-file is clicked', () => {
+  test('should toggle text entry UI when write-a-file is clicked', () => {
     render(<App />);
+
+    const textArea = screen.getByRole('textbox');
+    expect(textArea).toBeInTheDocument();
+    const uploadContentsFileButton = screen.getByText('🛫 Upload contents');
+    expect(uploadContentsFileButton).toBeInTheDocument();
+
     // Before clicking, the text area and submit button should not be visible:
-    // Unfortunately, tailwind primitives aren't expanded to their real css
-    // properties, so we can't use expect(element).not.toBeVisible().
+    // Unfortunately, Tailwind primitives aren't expanded to their real css
+    // properties for tests, so we can't use expect(element).not.toBeVisible().
+    expect(Object.values(textArea.parentElement!.classList)).toContain(
+      'invisible',
+    );
     expect(
-      Object.values(screen.getByRole('textbox').parentElement!.classList),
-    ).toContain('invisible');
-    expect(
-      Object.values(
-        screen.getByText('🛫 Upload contents').parentElement!.classList,
-      ),
+      Object.values(uploadContentsFileButton.parentElement!.classList),
     ).toContain('invisible');
 
     const writeAFileButton = screen.getByText('📝 Write a file');
+
+    // Due to the note above about how Tailwind primitives aren't expanded
+    // during tests, expect(textArea).toBeVisible() will actually _pass_ at
+    // first, despite the component being invisible in reality. This is because
+    // jest-dom has no understanding of what 'invisible' (from Tailwind) means.
+    // Because of this, we want to click _twice_ to ensure that the expected
+    // state is _not_ what was _already_ passing, because otherwise we could be
+    // accidentally passing the test.
+    writeAFileButton.click(); // Visible.
+    writeAFileButton.click(); // Invisible.
+    // NOTE: .not.toBeVisible() works now because the React code we use to
+    // toggle visibility actually changes the style of the component directly,
+    // since it will run after Tailwind has already executed. Therefore, the
+    // criteria for toBeVisible() is checked as expected.
+    expect(textArea).not.toBeVisible();
+    expect(uploadContentsFileButton).not.toBeVisible();
+
+    // The next click should have caused the textarea and submit button to
+    // become visible again:
     writeAFileButton.click();
-
-    // The click should have caused the textarea and submit button to become
-    // visible:
-    const textArea = screen.getByRole('textbox');
-    expect(textArea).toBeInTheDocument();
-
-    const uploadContentsFileButton = screen.getByText('🛫 Upload contents');
-    expect(uploadContentsFileButton).toBeInTheDocument();
+    expect(textArea).toBeVisible();
+    expect(uploadContentsFileButton).toBeVisible();
   });
 });
