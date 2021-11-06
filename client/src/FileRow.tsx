@@ -24,14 +24,13 @@ function handleDownload(id: string, filename: string) {
 }
 
 function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
-  // eslint-disable-next-line react/destructuring-assignment
-  console.log('got back file', props.f);
   const {
     f: { id, name, size, uploadTime, expireTime },
     deleteFile,
   } = props;
 
   const uploadTimeHumanReadable = format(Date.parse(uploadTime), 'MMMM do, p');
+  // TODO: Handle negative values here?
   const expireTimeLeft = formatDuration(
     intervalToDuration({
       start: new Date(),
@@ -42,17 +41,17 @@ function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
 
   return (
     <tr className="border-b hover:shadow-md" key={id}>
-      <th className="font-normal p-1 text-left px-10">
+      <td className="font-normal p-1 text-left px-10">
         <div className="font-bold font-mono">{name}</div>
         <div className="text-xs italic">({prettyBytes(size)})</div>
-      </th>
-      <th className="font-normal border-b text-left  px-10">
+      </td>
+      <td className="font-normal border-b text-left  px-10">
         <div className="italic">{uploadTimeHumanReadable}</div>
-      </th>
-      <th className="font-normal border-b text-left px-10">
+      </td>
+      <td className="font-normal border-b text-left px-10">
         <div className="italic">{expireTimeLeft}</div>
-      </th>
-      <th className="font-normal border-b">
+      </td>
+      <td className="font-normal border-b">
         <button
           aria-label="Download"
           type="button"
@@ -64,7 +63,7 @@ function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
           Download
         </button>
         <DeleteButton id={id} deleteFile={deleteFile} />
-      </th>
+      </td>
     </tr>
   );
 }
