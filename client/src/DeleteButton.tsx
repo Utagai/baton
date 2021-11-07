@@ -19,7 +19,7 @@ function DeleteButton(props: { id: string; deleteFile: (id: string) => void }) {
       onClick={() => handleDelete(id, deleteFile)}
       className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-red-500 hover:text-blue-100"
     >
-      Delete
+      🗑️ Delete
     </button>
   );
 }

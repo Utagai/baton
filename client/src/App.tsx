@@ -73,7 +73,6 @@ const App = () => {
         writeFileAction={() => {
           // Toggle the display visibility of the writing section div.
           if (textInputRef.current === null) {
-            console.log('uh oh was null?');
             return;
           }
 

@@ -60,7 +60,7 @@ function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
           }}
           className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-gray-500 hover:text-blue-100"
         >
-          Download
+          💾 Download
         </button>
         <DeleteButton id={id} deleteFile={deleteFile} />
       </td>
