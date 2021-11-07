@@ -23,13 +23,9 @@ async function triggerDeletionOfExpiredFiles() {
   callBackendAPI('deleteexpired', 'DELETE');
 }
 
-async function getFilesFromBackend() {
-  return callBackendAPI('files', 'GET');
-}
-
 async function getCurrentFiles() {
   await triggerDeletionOfExpiredFiles();
-  return getFilesFromBackend();
+  return callBackendAPI('files', 'GET');
 }
 
 const App = () => {
