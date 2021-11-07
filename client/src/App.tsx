@@ -57,7 +57,7 @@ const App = () => {
     return () => {
       mounted = false;
     };
-  });
+  }, []);
 
   return (
     <div className="grid place-items-center">
