@@ -41,7 +41,7 @@ const App = () => {
   React.useEffect(() => {
     const resp = debouncedCall();
     while (resp === undefined) {
-      throw Error('TODO');
+      throw Error(`backend took too long to respond (> ${debounceInterval})`);
     }
     resp
       .then((res) => {
@@ -49,7 +49,10 @@ const App = () => {
           setFiles(res.files);
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        throw Error(`failed to get files from backend: ${err}`);
+      });
+
   });
 
   return (
