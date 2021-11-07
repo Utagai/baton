@@ -39,13 +39,14 @@ const App = () => {
   );
 
   React.useEffect(() => {
+    let mounted = true;
     const resp = debouncedCall();
     while (resp === undefined) {
       throw Error(`backend took too long to respond (> ${debounceInterval})`);
     }
     resp
       .then((res) => {
-        if (res !== undefined) {
+        if (res !== undefined && mounted) {
           setFiles(res.files);
         }
       })
@@ -53,6 +54,9 @@ const App = () => {
         throw Error(`failed to get files from backend: ${err}`);
       });
 
+    return () => {
+      mounted = false;
+    };
   });
 
   return (
