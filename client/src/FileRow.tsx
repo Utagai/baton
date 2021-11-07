@@ -70,19 +70,21 @@ function FileRow(props: {
 
       <td className="font-normal border-b">
         <Button
-          text="🗑️ Download"
           ariaLabel="Download"
           onClick={() => {
             handleDownload(id, name);
           }}
-        />
+        >
+          🗑️ Downlad
+        </Button>
         <Button
-          text="💾 Delete"
           ariaLabel="Delete"
           onClick={() => {
             handleDelete(id, deleteFileFromState);
           }}
-        />
+        >
+          💾 Delete
+        </Button>
       </td>
     </tr>
   );

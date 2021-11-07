@@ -66,12 +66,13 @@ function CustomText(props: {
       />
 
       <Button
-        text="🛫 Upload contents"
         ariaLabel="Upload contents"
         onClick={() => {
           handleUpload(textInputAreaRef, textAreaText, addFileToState);
         }}
-      />
+      >
+        🛫 Upload contents
+      </Button>
     </div>
   );
 }

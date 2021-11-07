@@ -68,13 +68,10 @@ function UploadButtons(props: {
     <div className="w-1/2 mt-3 mb-1.5 mx-10">
       <div className="grid place-items-center">
         <span>
+          <Button ariaLabel="Write a file" onClick={writeFileAction}>
+            📝 Write a file
+          </Button>
           <Button
-            text="📝 Write a file"
-            ariaLabel="Write a file"
-            onClick={writeFileAction}
-          />
-          <Button
-            text="📂 Upload a file"
             ariaLabel="Upload a file"
             // This just makes it so that we trigger the click action on our
             // invisible file input. Once we've done that, the real action happens in
@@ -83,7 +80,9 @@ function UploadButtons(props: {
             // of this button and style the input element in the same way, and
             // only rely on its onChange?
             onClick={() => fileUploadInputRef.current?.click()}
-          />
+          >
+            📂 Upload a file
+          </Button>
 
           <input
             className="hidden"
