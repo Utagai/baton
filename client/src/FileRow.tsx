@@ -1,7 +1,7 @@
 import { format, formatDuration, intervalToDuration } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
 
-import DeleteButton from './DeleteButton';
+import Button from './Button';
 import './index.css';
 import file from './types';
 
@@ -23,10 +23,26 @@ function handleDownload(id: string, filename: string) {
   document.body.removeChild(a);
 }
 
-function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
+function handleDelete(id: string, deleteFileFromState: (_: string) => void) {
+  fetch(`/delete/${id}`, {
+    method: 'DELETE',
+  })
+    .then(async (resp) => {
+      console.log('response from backend: ', await resp.text());
+      deleteFileFromState(id);
+    })
+    .catch((err) => {
+      throw Error(`error from /delete call: ${err}`);
+    });
+}
+
+function FileRow(props: {
+  f: file;
+  deleteFileFromState: (id: string) => void;
+}) {
   const {
     f: { id, name, size, uploadTime, expireTime },
-    deleteFile,
+    deleteFileFromState,
   } = props;
 
   const uploadTimeHumanReadable = format(Date.parse(uploadTime), 'MMMM do, p');
@@ -51,18 +67,22 @@ function FileRow(props: { f: file; deleteFile: (id: string) => void }) {
       <td className="font-normal border-b text-left px-10">
         <div className="italic">{expireTimeLeft}</div>
       </td>
+
       <td className="font-normal border-b">
-        <button
-          aria-label="Download"
-          type="button"
+        <Button
+          text="🗑️ Download"
+          ariaLabel="Download"
           onClick={() => {
             handleDownload(id, name);
           }}
-          className="bg-transparent font-semibold border rounded-sm p-1.5 hover:bg-gray-500 hover:text-blue-100"
-        >
-          💾 Download
-        </button>
-        <DeleteButton id={id} deleteFile={deleteFile} />
+        />
+        <Button
+          text="💾 Delete"
+          ariaLabel="Delete"
+          onClick={() => {
+            handleDelete(id, deleteFileFromState);
+          }}
+        />
       </td>
     </tr>
   );

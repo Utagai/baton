@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import './index.css';
 import file from './types';
+import Button from './Button';
 
 // TODO: Maybe this should exist in App.tsx and passed down here?
 function handleUpload(
@@ -67,28 +68,23 @@ function UploadButtons(props: {
     <div className="w-1/2 mt-3 mb-1.5 mx-10">
       <div className="grid place-items-center">
         <span>
-          <button
-            aria-label="Write a file"
-            type="button"
-            className="border font-semibold rounded-sm text-gray-700 bg-gray-50 px-4 py-2 m-1 hover:bg-gray-500 hover:text-gray-50"
+          <Button
+            text="📝 Write a file"
+            ariaLabel="Write a file"
             onClick={writeFileAction}
-          >
-            📝 Write a file
-          </button>
-          <button
-            aria-label="Upload a file"
-            type="button"
-            className="border font-semibold rounded-sm text-gray-700 bg-gray-50 px-4 py-2 m-1 hover:bg-gray-500 hover:text-gray-50"
+          />
+          <Button
+            text="📂 Upload a file"
+            ariaLabel="Upload a file"
             // This just makes it so that we trigger the click action on our
             // invisible file input. Once we've done that, the real action happens in
             // the invisible input's onChange handler.
             // TODO: Is this maybe over-complicated? Maybe we can just get rid
-            // of this button and style the input in the same way, and only rely
-            // on its onChange?
+            // of this button and style the input element in the same way, and
+            // only rely on its onChange?
             onClick={() => fileUploadInputRef.current?.click()}
-          >
-            📂 Upload a file
-          </button>
+          />
+
           <input
             className="hidden"
             type="file"
