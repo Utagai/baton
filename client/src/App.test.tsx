@@ -103,9 +103,9 @@ describe('app', () => {
     // We need to keep the value < 1000, or else we will pretty-print the
     // filesize into kB instead of just B.
     expect(files.length).toBeLessThan(1000);
-    const filesReturnerMock = jest.fn(() => ({ files }));
+    const filesEndpointMock = jest.fn(() => ({ files }));
     server.use(
-      rest.get('/files', (_, res, ctx) => res(ctx.json(filesReturnerMock()))),
+      rest.get('/files', (_, res, ctx) => res(ctx.json(filesEndpointMock()))),
     );
 
     render(<App />);
@@ -135,10 +135,10 @@ describe('app', () => {
       });
     });
 
-    expect(filesReturnerMock).toHaveBeenCalledTimes(1);
+    expect(filesEndpointMock).toHaveBeenCalledTimes(1);
   });
 
-  test('displays expected files from API', async () => {
+  test('deleted expected file', async () => {
     const originalFile = {
       id: 'test',
       name: 'test',
@@ -191,4 +191,10 @@ describe('app', () => {
       ).toBeNull();
     });
   });
+
+  // NOTE: We do not test the download button. This is unfortunate, but it is
+  // because the action we take on click for the download button does some hacky
+  // thing which changes the window href. I'm not exactly sure why, but doing
+  // this causes the test to hang.
+  // test('downloads expected file', () => {})
 });
