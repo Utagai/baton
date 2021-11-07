@@ -103,9 +103,9 @@ describe('app', () => {
     // We need to keep the value < 1000, or else we will pretty-print the
     // filesize into kB instead of just B.
     expect(files.length).toBeLessThan(1000);
-    const fileReturnerMock = jest.fn(() => ({ files }));
+    const filesReturnerMock = jest.fn(() => ({ files }));
     server.use(
-      rest.get('/files', (_, res, ctx) => res(ctx.json(fileReturnerMock()))),
+      rest.get('/files', (_, res, ctx) => res(ctx.json(filesReturnerMock()))),
     );
 
     render(<App />);
@@ -135,7 +135,7 @@ describe('app', () => {
       });
     });
 
-    expect(fileReturnerMock).toHaveBeenCalledTimes(1);
+    expect(filesReturnerMock).toHaveBeenCalledTimes(1);
   });
 
   test('displays expected files from API', async () => {
