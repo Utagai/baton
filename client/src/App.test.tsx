@@ -153,9 +153,10 @@ describe('app', () => {
       rest.get('/files', (_, res, ctx) =>
         res(ctx.json({ files: [originalFile] })),
       ),
-      rest.delete('/delete/:fileID', (req, res, ctx) =>
-        res(ctx.json({ id: req.params.fileID })),
-      ),
+      rest.delete('/delete/:fileID', (req, res, ctx) => {
+        expect(req.params.fileID).toEqual(originalFile.id);
+        return res(ctx.json({ id: req.params.fileID }));
+      }),
     );
 
     render(<App />);
