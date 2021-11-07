@@ -1,5 +1,17 @@
-import { render, screen } from '@testing-library/react';
+import { addDays, format, formatDuration, intervalToDuration } from 'date-fns';
+import { rest } from 'msw';
+import { setupServer } from 'msw/node';
+import { render, screen, waitFor } from '@testing-library/react';
 import App from './App';
+
+const server = setupServer(
+  rest.get('/files', (_, res, ctx) => res(ctx.json({ files: [] }))),
+  rest.delete('/deleteexpired', (_, res, ctx) => res(ctx.json({}))),
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 describe('app', () => {
   test('renders title', () => {
@@ -35,7 +47,7 @@ describe('app', () => {
     expect(uploadAFileButton).toBeInTheDocument();
   });
 
-  test('should toggle text entry UI when write-a-file is clicked', () => {
+  test('toggles text entry UI when write-a-file is clicked', () => {
     render(<App />);
 
     const textArea = screen.getByRole('textbox');
@@ -76,5 +88,52 @@ describe('app', () => {
     writeAFileButton.click();
     expect(textArea).toBeVisible();
     expect(uploadContentsFileButton).toBeVisible();
+  });
+
+  test('displays expected files from API', async () => {
+    const files = Array(10)
+      .fill(0)
+      .map((_, i) => ({
+        id: i.toString(),
+        name: i.toString(),
+        size: i,
+        uploadTime: new Date(),
+        expireTime: addDays(new Date(), 1),
+      }));
+    // We need to keep the value < 1000, or else we will pretty-print the
+    // filesize into kB instead of just B.
+    expect(files.length).toBeLessThan(1000);
+    const fileReturnerMock = jest.fn(() => ({ files }));
+    server.use(
+      rest.get('/files', (_, res, ctx) => res(ctx.json(fileReturnerMock()))),
+    );
+
+    render(<App />);
+
+    await waitFor(() => {
+      files.forEach((file, i) => {
+        expect(screen.getByText(file.name)).toBeInTheDocument();
+        expect(screen.getByText(`(${file.size} B)`)).toBeInTheDocument();
+        const uploadTimeElements = screen.getAllByText(
+          format(file.uploadTime, 'MMMM do, p'),
+        );
+        expect(uploadTimeElements).toHaveLength(files.length);
+        expect(uploadTimeElements[i]).toBeInTheDocument();
+
+        const expireTimeDurationElements = screen.getAllByText(
+          formatDuration(
+            intervalToDuration({
+              start: new Date(),
+              end: file.expireTime,
+            }),
+            { format: ['days', 'hours', 'minutes'], delimiter: ', ' },
+          ),
+        );
+        expect(expireTimeDurationElements).toHaveLength(files.length);
+        expect(expireTimeDurationElements[i]).toBeInTheDocument();
+      });
+    });
+
+    expect(fileReturnerMock).toHaveBeenCalledTimes(1);
   });
 });
