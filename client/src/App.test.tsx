@@ -163,7 +163,9 @@ describe('app', () => {
 
     // Wait for React to paint the Delete button.
     await waitFor(() => {
-      const deleteButton = screen.getByText('🗑️ Delete');
+      // NOTE: I don't use the wastebasket emoji here because for some reason,
+      // that emoji + my terminal font gives me really wack unicode issues.
+      const deleteButton = screen.getByText(/Delete/);
       expect(deleteButton).toBeInTheDocument();
       deleteButton.click();
     });
