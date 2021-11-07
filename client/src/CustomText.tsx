@@ -15,14 +15,14 @@ function handleUpload(
 
     const formData = new FormData();
     formData.append(
-      'filename',
+      'name',
       `${textAreaText
         .replace(/(\r\n|\n|\r)/gm, ' ')
         .split(' ')
         .slice(0, 5)
         .join('_')}.txt`,
     );
-    formData.append('filesize', `${textAreaBytes.length}`);
+    formData.append('size', `${textAreaBytes.length}`);
     formData.append('id', uuidv4());
     formData.append('file', new Blob([textAreaBytes]));
     fetch('/upload', {

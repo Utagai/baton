@@ -29,12 +29,14 @@ function handleUpload(
       // Nothing else we can do.
       continue;
     }
+    console.log('f:', f.name);
 
     const formData = new FormData();
-    formData.append('filename', f.name);
-    formData.append('filesize', f.size.toString());
+    formData.append('name', f.name);
+    formData.append('size', f.size.toString());
     formData.append('id', uuidv4());
     formData.append('file', f);
+    console.log('form:', Object.values(formData));
     uploadRequests.push(
       fetch('/upload', {
         method: 'POST',
@@ -88,6 +90,7 @@ function UploadButtons(props: {
             className="hidden"
             type="file"
             ref={fileUploadInputRef}
+            data-testid="hidden-input-element"
             onChange={(e) => {
               handleUpload(e, addFile);
             }}

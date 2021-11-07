@@ -64,9 +64,10 @@ function AppFactory(
   // once this endpoint returns.
   app.post('/upload', (req, res) => {
     const { body: uploadRequest } = req;
+    console.log('upload request:', uploadRequest);
     const file: File = {
-      name: uploadRequest.filename,
-      size: parseInt(uploadRequest.filesize, 10),
+      name: uploadRequest.name,
+      size: parseInt(uploadRequest.size, 10),
       id: uploadRequest.id,
       uploadTime: new Date(),
       expireTime: addDays(new Date(), fileLifetimeInDays),

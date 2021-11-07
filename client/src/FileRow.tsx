@@ -12,7 +12,7 @@ function handleDownload(id: string, filename: string) {
   // gives a more seamless experience.
   // TODO: On top of this already hacky business, we are hardcoding the
   // host/port of the backend.
-  const url = `http://localhost:8080/download/${id}`;
+  const url = `http://192.168.1.106:8080/download/${id}`;
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;

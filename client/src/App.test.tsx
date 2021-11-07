@@ -2,7 +2,10 @@ import { addDays, format, formatDuration, intervalToDuration } from 'date-fns';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
 import App from './App';
+import file from './types';
 
 const server = setupServer(
   rest.get('/files', (_, res, ctx) => res(ctx.json({ files: [] }))),
@@ -197,4 +200,38 @@ describe('app', () => {
   // thing which changes the window href. I'm not exactly sure why, but doing
   // this causes the test to hang.
   // test('downloads expected file', () => {})
+
+  test('upload file', async () => {
+    const files: file[] = [];
+    server.use(
+      rest.get('/files', (_, res, ctx) => res(ctx.json({ files }))),
+      rest.post('/upload', (req, res, ctx) => {
+        console.log('req:', Object.values(req.body));
+        const f = {
+          id: req.params.id,
+          name: req.params.name,
+          size: req.params.size,
+          uploadTime: req.params.uploadTime,
+          expireTime: req.params.expireTime,
+        };
+        console.log('f:', f);
+        files.push(f);
+        return res(ctx.json(f));
+      }),
+    );
+
+    render(<App />);
+
+    // Wait for React to paint the Upload button.
+    await waitFor(() => {
+      // NOTE: I don't use the wastebasket emoji here because for some reason,
+      // that emoji + my terminal font gives me really wack unicode issues.
+      const uploadButton = screen.getByText('📂 Upload a file');
+      expect(uploadButton).toBeInTheDocument();
+      uploadButton.click();
+      const inputElement = screen.getByTestId('hidden-input-element');
+      const fileToUpload = new File(['hello'], 'hello.txt', { type: 'text' });
+      userEvent.upload(inputElement, fileToUpload);
+    });
+  });
 });
