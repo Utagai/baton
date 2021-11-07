@@ -32,8 +32,9 @@ const App = () => {
   const [files, setFiles] = React.useState<file[]>([]);
   const textInputRef = React.useRef<HTMLDivElement>(null);
 
+  const debounceInterval = 250;
   const debouncedCall = React.useCallback(
-    debounce(getCurrentFiles, 250, { leading: true }),
+    debounce(getCurrentFiles, debounceInterval, { leading: true }),
     [],
   );
 
