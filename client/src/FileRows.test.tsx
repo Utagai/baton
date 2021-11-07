@@ -22,9 +22,9 @@ describe('FileRows', () => {
     );
 
     const fileRowElements = within(container).getAllByRole('row');
-    expect(fileRowElements).toHaveLength(numFiles);
     fileRowElements.forEach((fileRow) => {
       expect(fileRow).toBeInTheDocument();
     });
+    expect(fileRowElements).toHaveLength(numFiles);
   });
 });

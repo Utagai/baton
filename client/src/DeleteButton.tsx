@@ -6,7 +6,9 @@ function handleDelete(id: string, deleteFile: (innerId: string) => void) {
       console.log('response from backend: ', await resp.text());
       deleteFile(id);
     })
-    .catch((err) => console.log(`error from /delete call: ${err}`));
+    .catch((err) => {
+      throw Error(`error from /delete call: ${err}`);
+    });
 }
 
 function DeleteButton(props: { id: string; deleteFile: (id: string) => void }) {
