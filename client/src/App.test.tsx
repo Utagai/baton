@@ -110,6 +110,7 @@ describe('app', () => {
 
     render(<App />);
 
+    // Wait for React to paint the data in the rows.
     await waitFor(() => {
       files.forEach((file, i) => {
         expect(screen.getByText(file.name)).toBeInTheDocument();
@@ -135,5 +136,56 @@ describe('app', () => {
     });
 
     expect(fileReturnerMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('displays expected files from API', async () => {
+    const originalFile = {
+      id: 'test',
+      name: 'test',
+      size: 10,
+      uploadTime: new Date(),
+      expireTime: addDays(new Date(), 1),
+    };
+    // Because we do not have a database, we just use this flag to denote if the
+    // file has been deleted or not. If it has been deleted, we do not return it
+    // from /files, otherwise we do.
+    server.use(
+      rest.get('/files', (_, res, ctx) =>
+        res(ctx.json({ files: [originalFile] })),
+      ),
+      rest.delete('/delete/:fileID', (req, res, ctx) =>
+        res(ctx.json({ id: req.params.fileID })),
+      ),
+    );
+
+    render(<App />);
+
+    // Wait for React to paint the Delete button.
+    await waitFor(() => {
+      const deleteButton = screen.getByText('🗑️ Delete');
+      expect(deleteButton).toBeInTheDocument();
+      deleteButton.click();
+    });
+
+    // Wait for React to delete the row.
+    await waitFor(() => {
+      expect(screen.queryByText(originalFile.name)).toBeNull();
+      expect(screen.queryByText(`(${originalFile.size} B)`)).toBeNull();
+      expect(
+        screen.queryByText(format(originalFile.uploadTime, 'MMMM do, p')),
+      ).toBeNull();
+
+      expect(
+        screen.queryByText(
+          formatDuration(
+            intervalToDuration({
+              start: new Date(),
+              end: originalFile.expireTime,
+            }),
+            { format: ['days', 'hours', 'minutes'], delimiter: ', ' },
+          ),
+        ),
+      ).toBeNull();
+    });
   });
 });
