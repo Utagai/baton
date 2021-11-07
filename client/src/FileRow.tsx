@@ -6,8 +6,6 @@ import './index.css';
 import file from './types';
 
 function handleDownload(id: string, filename: string) {
-  console.log('will download: ', id);
-
   // This is so hacky but this seems to be the nicest way to do it...
   // window.open() seems nicer but it can trigger pop-up blockers and such (and
   // at least for my own firefox set-up, firefox initially blocks it...). This
@@ -27,8 +25,7 @@ function handleDelete(id: string, deleteFileFromState: (_: string) => void) {
   fetch(`/delete/${id}`, {
     method: 'DELETE',
   })
-    .then(async (resp) => {
-      console.log('response from backend: ', await resp.text());
+    .then(async () => {
       deleteFileFromState(id);
     })
     .catch((err) => {
@@ -75,7 +72,7 @@ function FileRow(props: {
             handleDownload(id, name);
           }}
         >
-          🗑️ Downlad
+          💾 Downlad
         </Button>
         <Button
           ariaLabel="Delete"
@@ -83,7 +80,7 @@ function FileRow(props: {
             handleDelete(id, deleteFileFromState);
           }}
         >
-          💾 Delete
+          🗑️ Delete
         </Button>
       </td>
     </tr>
