@@ -66,7 +66,7 @@ const App = () => {
       <Table
         files={files}
         deleteFile={(id: string) => {
-          setFiles(files.filter((f) => f.id === id));
+          setFiles(files.filter((f) => f.id !== id));
         }}
       />
 
