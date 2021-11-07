@@ -72,7 +72,7 @@ function FileRow(props: {
             handleDownload(id, name);
           }}
         >
-          💾 Downlad
+          💾 Download
         </Button>
         <Button
           ariaLabel="Delete"
