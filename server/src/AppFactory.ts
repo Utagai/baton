@@ -4,7 +4,6 @@ import { addDays } from 'date-fns';
 import path from 'path';
 import process from 'process';
 import pino from 'pino';
-import expressPino from 'express-pino-logger';
 
 import FilesDB from './FilesDB';
 import File from './File';
@@ -23,7 +22,32 @@ function AppFactory(
   const app = express();
   app.use(express.json());
   app.use(fileUpload());
-  app.use(expressPino({ logger }));
+  app.use(
+    (
+      req: express.Request,
+      res: express.Response,
+      next: express.NextFunction,
+    ) => {
+      logger.debug(
+        {
+          req: {
+            method: req.method,
+            url: req.url,
+            query: req.query,
+            params: req.params,
+            headers: req.headers,
+            remoteAddr: req.ip,
+          },
+          res: {
+            statusCode: res.statusCode,
+            headers: res.getHeaders(),
+          },
+        },
+        'handling request',
+      );
+      next();
+    },
+  );
   // Make it so that we only ever return application/json by default.
   app.use((_req, res, next) => {
     res.contentType('application/json');
