@@ -30,7 +30,11 @@ module.exports = {
       },
     ],
     'no-console': 0,
-    'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
-    "import/no-extraneous-dependencies": ["error", {"devDependencies": ["**/*.test.ts", "**/*.test.tsx"]}],
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    'import/no-extraneous-dependencies': [
+      'error',
+      { devDependencies: ['**/*.test.ts', '**/*.test.tsx'] },
+    ],
   },
 };
