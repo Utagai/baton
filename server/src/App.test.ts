@@ -156,8 +156,8 @@ describe('upload', () => {
     const dataToUpload = Buffer.from('hello world!');
     await request(app)
       .post('/upload')
-      .field('filename', currentTestName)
-      .field('filesize', '100')
+      .field('name', currentTestName)
+      .field('size', '100')
       .field('id', currentTestName)
       .attach('file', dataToUpload)
       .attach('file', dataToUpload) // This second attachment should cause this to fail.
@@ -168,6 +168,78 @@ describe('upload', () => {
         expect(resp.body).toEqual({
           msg: 'cannot upload more than 1 file',
           attemptedCount: 2,
+        });
+      });
+  });
+
+  test('invalid form data fields', async () => {
+    const { currentTestName } = expect.getState();
+    const app = getTestApp(expect.getState().currentTestName);
+
+    const dataToUpload = Buffer.from('hello world!');
+    await request(app)
+      .post('/upload')
+      .field('filename', currentTestName) // This & below could be a common mistake.
+      .field('filesize', '100')
+      .field('id', currentTestName)
+      .attach('file', dataToUpload)
+      .expect(500)
+      .expect('Content-Type', /json/)
+      .then((resp) => {
+        console.log('resp body:', resp.body);
+        expect(resp.body).toEqual({
+          msg: 'expected "name", "id", and "size" parameters in the form data',
+          got: {
+            filename: 'upload invalid form data fields',
+            filesize: '100',
+            id: 'upload invalid form data fields',
+          },
+        });
+      });
+  });
+
+  test('mimic empty database update', async () => {
+    const { currentTestName } = expect.getState();
+    // Make the logs pretty to make debugging test failures easier.
+    const logger = pino({
+      level: testLogLevel,
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+        },
+      },
+    });
+    const fileUploadPath = testUploadPath;
+    const defaultFileLifetimeInDays = testDefaultFileLifetime;
+    const mockedFilesDB = {
+      getAllFiles: () => [] as File[],
+      getFile: (_: string) => undefined as File | undefined,
+      addFile: (_: File) => 0,
+      deleteFile: (_: string) => 0,
+      deleteExpiredFiles: () => 0,
+    };
+    const app = AppFactory(
+      logger,
+      mockedFilesDB,
+      fileUploadPath,
+      defaultFileLifetimeInDays,
+    );
+
+    const dataToUpload = Buffer.from('hello world!');
+    await request(app)
+      .post('/upload')
+      .field('name', currentTestName) // This & below could be a common mistake.
+      .field('size', '100')
+      .field('id', currentTestName)
+      .attach('file', dataToUpload)
+      .expect(500)
+      .expect('Content-Type', /json/)
+      .then((resp) => {
+        console.log('resp body:', resp.body);
+        expect(resp.body).toEqual({
+          msg: 'failed to persist upload to metadata',
+          numChanged: 0,
         });
       });
   });

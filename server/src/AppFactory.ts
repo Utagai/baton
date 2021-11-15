@@ -60,19 +60,7 @@ function AppFactory(
     msg: string,
     details?: Error | object,
   ) => {
-    logger.error(details, msg);
-    // TODO: We may also want to conditionally show errors depending on if we are
-    // developing locally vs. in production.
-    if (details instanceof Error) {
-      // Hide the error from the client, since it contains server-side 'internal'
-      // information.
-      // It likely doesn't matter cause I'm the only one that uses it, but
-      // whatever.
-      res.status(500).send(JSON.stringify({ msg }));
-    } else {
-      // TODO: We are not handling the case where details has a field named err.
-      res.status(500).send(JSON.stringify({ msg, ...details }));
-    }
+    res.status(500).send(JSON.stringify({ msg, ...details }));
   };
 
   // /files returns a listing of all the files, _including_ expired files.
@@ -88,7 +76,14 @@ function AppFactory(
   // once this endpoint returns.
   app.post('/upload', (req, res) => {
     const { body: uploadRequest } = req;
-    console.log('upload request:', uploadRequest);
+    if (!uploadRequest.name || !uploadRequest.id || !uploadRequest.size) {
+      sendErr(
+        res,
+        'expected "name", "id", and "size" parameters in the form data',
+        { got: uploadRequest },
+      );
+      return;
+    }
     const file: File = {
       name: uploadRequest.name,
       size: parseInt(uploadRequest.size, 10),
@@ -105,10 +100,12 @@ function AppFactory(
         .then(() => {
           const numChanged = filesDB.addFile(file);
           if (numChanged !== 1) {
-            sendErr(res, 'failed to persist upload to metadata');
-          } else {
-            res.send(file);
+            sendErr(res, 'failed to persist upload to metadata', {
+              numChanged,
+            });
+            return;
           }
+          res.send(file);
         })
         .catch((err) => {
           sendErr(res, `failed to upload files`, err);
@@ -160,7 +157,6 @@ function AppFactory(
       id,
     )}${path.extname(file.name)}`;
     res.download(fullpath, file.name, (err) => {
-      logger.error(err, 'failed to return a download');
       if (!res.headersSent) {
         if (err.message === 'Not Found') {
           res.status(404);
