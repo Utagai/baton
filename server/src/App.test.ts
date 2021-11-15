@@ -109,14 +109,14 @@ describe('upload', () => {
     const testID = `${currentTestName}_test.txt`.replace(/ /g, '_');
     await request(app)
       .post('/upload')
-      .field('filename', currentTestName)
-      .field('filesize', '100')
+      .field('name', currentTestName)
+      .field('size', '100')
       .field('id', testID)
       .attach('file', dataToUpload)
       .expect(200)
       .expect('Content-Type', /json/)
       .then((resp) => {
-        console.log('resp body:', resp.body);
+        // console.log('resp body:', resp.text);
         expect(resp.body).toEqual({
           name: currentTestName,
           size: 100,
