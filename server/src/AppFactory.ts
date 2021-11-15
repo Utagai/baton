@@ -37,6 +37,7 @@ function AppFactory(
             params: req.params,
             headers: req.headers,
             remoteAddr: req.ip,
+            body: req.body,
           },
           res: {
             statusCode: res.statusCode,
