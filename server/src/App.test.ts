@@ -4,7 +4,8 @@ import request from 'supertest';
 import pino from 'pino';
 import { addDays } from 'date-fns';
 
-import FilesDB from './FilesDB';
+import File from './File';
+import { SQLiteFilesDB } from './FilesDB';
 import AppFactory from './AppFactory';
 
 const testLogLevel = 'debug';
@@ -14,7 +15,7 @@ const testDefaultFileLifetime = 1;
 
 function getTestFilesDB(currentTestName: string) {
   const testTableName = currentTestName.replace(/ /g, '_');
-  return new FilesDB(testSQLiteDBFile, testTableName);
+  return new SQLiteFilesDB(testSQLiteDBFile, testTableName);
 }
 
 function getTestApp(currentTestName: string) {

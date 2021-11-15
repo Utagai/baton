@@ -2,7 +2,15 @@ import sqlite from 'better-sqlite3';
 
 import File from './File';
 
-class FilesDB {
+export interface FilesDB {
+  getAllFiles(): File[];
+  getFile(id: string): File | undefined;
+  addFile(f: File): number;
+  deleteFile(id: string): number;
+  deleteExpiredFiles(): number;
+}
+
+export class SQLiteFilesDB implements FilesDB {
   db: sqlite.Database;
 
   tableName: string;
@@ -67,5 +75,3 @@ class FilesDB {
     return deleteStmt.run({ now: new Date().toISOString() }).changes;
   }
 }
-
-export default FilesDB;

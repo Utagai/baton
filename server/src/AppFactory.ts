@@ -5,7 +5,7 @@ import path from 'path';
 import process from 'process';
 import pino from 'pino';
 
-import FilesDB from './FilesDB';
+import { FilesDB } from './FilesDB';
 import File from './File';
 
 // AppFactory hides much of the actual configuration of the express server,
