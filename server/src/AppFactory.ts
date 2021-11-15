@@ -172,6 +172,20 @@ function AppFactory(
     });
   });
 
+  app.use(
+    (
+      err: Error,
+      _: express.Request,
+      __: express.Response,
+      next: express.NextFunction,
+    ) => {
+      // I don't know why logger.error(err) does not do the trick :(.
+      // It only shows the error code. I seem to have to get it in this format
+      // for it to print out everything and do so nicely.
+      logger.error({ type: 'Error', message: err.message, stack: err.stack });
+      return next(err);
+    },
+  );
   return app;
 }
 
