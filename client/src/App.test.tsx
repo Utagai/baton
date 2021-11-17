@@ -202,21 +202,12 @@ describe('app', () => {
   // test('downloads expected file', () => {})
 
   test('upload file', async () => {
-    const files: file[] = [];
+    let uploadCalled = false;
     server.use(
-      rest.get('/files', (_, res, ctx) => res(ctx.json({ files }))),
-      rest.post('/upload', (req, res, ctx) => {
-        console.log('req:', Object.values(req.body));
-        const f = {
-          id: req.params.id,
-          name: req.params.name,
-          size: req.params.size,
-          uploadTime: req.params.uploadTime,
-          expireTime: req.params.expireTime,
-        };
-        console.log('f:', f);
-        files.push(f);
-        return res(ctx.json(f));
+      rest.get('/files', (_, res, ctx) => res(ctx.json({ files: [] }))),
+      rest.post('/upload', (_, res, ctx) => {
+        uploadCalled = true;
+        return res(ctx.json({}));
       }),
     );
 
@@ -224,14 +215,22 @@ describe('app', () => {
 
     // Wait for React to paint the Upload button.
     await waitFor(() => {
-      // NOTE: I don't use the wastebasket emoji here because for some reason,
-      // that emoji + my terminal font gives me really wack unicode issues.
       const uploadButton = screen.getByText('📂 Upload a file');
       expect(uploadButton).toBeInTheDocument();
       uploadButton.click();
       const inputElement = screen.getByTestId('hidden-input-element');
       const fileToUpload = new File(['hello'], 'hello.txt', { type: 'text' });
       userEvent.upload(inputElement, fileToUpload);
+    });
+
+    // So, we are only checking that the react code correctly calls the
+    // endpoint. The reason for this is because the react code is meant to run
+    // in a browser, where the FormData & File type exist. To use it in node,
+    // we'd have to polyfill that, which would be a lot of work and I'm not even
+    // sure how to do it. I tried with a polyfill implementation but it got
+    // weird and wasn't exactly consistent with the browser behavior.
+    await waitFor(() => {
+      expect(uploadCalled).toBeTruthy();
     });
   });
 });
