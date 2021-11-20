@@ -5,6 +5,9 @@ import Button from './Button';
 import './index.css';
 import file from './types';
 
+// This function won't be something we can test in jest, we'd need true E2E
+// testing for it.
+/* istanbul ignore next */
 function handleDownload(id: string, filename: string) {
   // This is so hacky but this seems to be the nicest way to do it...
   // window.open() seems nicer but it can trigger pop-up blockers and such (and
@@ -69,6 +72,9 @@ function FileRow(props: {
         <Button
           ariaLabel="Download"
           onClick={() => {
+            // This function won't be something we can test in jest, we'd need true E2E
+            // testing for it.
+            /* istanbul ignore next */
             handleDownload(id, name);
           }}
         >

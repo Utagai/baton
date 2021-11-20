@@ -1,11 +1,12 @@
 import { addDays, format, formatDuration, intervalToDuration } from 'date-fns';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
+import { v4 as uuidv4 } from 'uuid';
 import userEvent from '@testing-library/user-event';
 
-import App from './App';
 import file from './types';
+import App from './App';
 
 const server = setupServer(
   rest.get('/files', (_, res, ctx) => res(ctx.json({ files: [] }))),
@@ -201,36 +202,126 @@ describe('app', () => {
   // this causes the test to hang.
   // test('downloads expected file', () => {})
 
-  test('upload file', async () => {
-    let uploadCalled = false;
-    server.use(
-      rest.get('/files', (_, res, ctx) => res(ctx.json({ files: [] }))),
-      rest.post('/upload', (_, res, ctx) => {
-        uploadCalled = true;
-        return res(ctx.json({}));
-      }),
-    );
+  describe('upload', () => {
+    // So, this test is not complete in that our /upload endpoint is not using
+    // the actual data we should be getting back from our React code. The reason
+    // for this is because the react code is meant to run in a browser, where
+    // the FormData & File type exist. To use it in node, we'd have to polyfill
+    // that, and I'm not even sure how to do it. I tried with quite a few
+    // polyfill implementations but there were always either issues
+    // compiling/running Jest with them (e.g. import vs. require issues) or got
+    // weird and wasn't exactly consistent with the browser behavior.
 
-    render(<App />);
+    function startServer(): () => {
+      filesCalled: boolean;
+      uploadCalled: boolean;
+    } {
+      // It is possible that /files gets called for the first time _after_ /upload
+      // gets called. If this happens, then we won't be testing that our upload is
+      // properly updating the state, we'll just be making sure we update the
+      // state accordingly with the backend, which is a separate test.
+      let filesCalled = false;
+      let uploadCalled = false;
+      const fileContents = 'text';
 
-    // Wait for React to paint the Upload button.
-    await waitFor(() => {
-      const uploadButton = screen.getByText('📂 Upload a file');
-      expect(uploadButton).toBeInTheDocument();
-      uploadButton.click();
-      const inputElement = screen.getByTestId('hidden-input-element');
-      const fileToUpload = new File(['hello'], 'hello.txt', { type: 'text' });
-      userEvent.upload(inputElement, fileToUpload);
+      server.use(
+        rest.get('/files', (_, res, ctx) => {
+          filesCalled = true;
+          if (uploadCalled) {
+            return res(
+              ctx.json({
+                files: [
+                  {
+                    name: `${fileContents}.txt`,
+                    size: fileContents.length,
+                    id: uuidv4(),
+                    uploadTime: new Date().toISOString(),
+                    expireTime: new Date().toISOString(),
+                  },
+                ],
+              }),
+            );
+          }
+
+          return res(ctx.json({ files: [] }));
+        }),
+        rest.post('/upload', (_, res, ctx) => {
+          uploadCalled = true;
+          return res(
+            ctx.json({
+              name: `${fileContents}.txt`,
+              size: fileContents.length,
+              id: uuidv4(),
+              uploadTime: new Date().toISOString(),
+              expireTime: new Date().toISOString(),
+            }),
+          );
+        }),
+      );
+
+      return () => ({ filesCalled, uploadCalled });
+    }
+
+    test('file', async () => {
+      const getEndpointCalledStatuses = startServer();
+      const fileContents = 'text';
+
+      render(<App />);
+
+      await waitFor(() => {
+        expect(getEndpointCalledStatuses().filesCalled).toBeTruthy();
+      });
+
+      await waitFor(() => {
+        // Wait for React to paint the Upload button.
+        const uploadButton = screen.getByText('📂 Upload a file');
+        expect(uploadButton).toBeInTheDocument();
+        act(() => {
+          userEvent.click(uploadButton);
+        });
+
+        const inputElement = screen.getByTestId('hidden-input-element');
+        const fileToUpload = new File(['hello'], 'hello.txt', { type: 'text' });
+        act(() => {
+          userEvent.upload(inputElement, fileToUpload);
+        });
+      });
+
+      await waitFor(() => {
+        expect(getEndpointCalledStatuses().uploadCalled).toBeTruthy();
+        expect(screen.getByText(`${fileContents}.txt`)).toBeInTheDocument();
+      });
     });
 
-    // So, we are only checking that the react code correctly calls the
-    // endpoint. The reason for this is because the react code is meant to run
-    // in a browser, where the FormData & File type exist. To use it in node,
-    // we'd have to polyfill that, which would be a lot of work and I'm not even
-    // sure how to do it. I tried with a polyfill implementation but it got
-    // weird and wasn't exactly consistent with the browser behavior.
-    await waitFor(() => {
-      expect(uploadCalled).toBeTruthy();
+    test('custom contents', async () => {
+      const getEndpointCalledStatuses = startServer();
+      const fileContents = 'text';
+      render(<App />);
+
+      await waitFor(() => {
+        expect(getEndpointCalledStatuses().filesCalled).toBeTruthy();
+      });
+
+      // Wait for React to paint the Upload button.
+      await waitFor(() => {
+        // TODO: Get rid of the emojis, please.
+        const writeAFileButton = screen.getByText('📝 Write a file');
+        writeAFileButton.click();
+        const textArea = screen.getByRole('textbox');
+        act(() => {
+          userEvent.type(textArea, fileContents);
+        });
+        expect(textArea).toHaveValue(fileContents);
+        const uploadContentsButton = screen.getByText(/Upload contents/);
+        uploadContentsButton.click();
+      });
+
+      // See the explanatory comment in the upload file test case for why this
+      // test is simpler than it should be.
+      await waitFor(() => {
+        expect(getEndpointCalledStatuses().uploadCalled).toBeTruthy();
+        expect(screen.getByText(`${fileContents}.txt`)).toBeInTheDocument();
+      });
     });
   });
 });

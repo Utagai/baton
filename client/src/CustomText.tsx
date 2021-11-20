@@ -1,3 +1,5 @@
+import { TextEncoder } from 'util';
+
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -29,14 +31,13 @@ function handleUpload(
       method: 'POST',
       body: formData,
     })
-      .then(async (resp) => {
+      .then((resp) => {
         if (!resp.ok) {
           throw new Error('failed to upload custom content');
         }
         return resp.json();
       })
       .then((f) => {
-        console.log('req res: ', f);
         addFileToState(f);
       })
       .catch((err) => {

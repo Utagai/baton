@@ -19,24 +19,19 @@ function handleUpload(
     return;
   }
 
-  console.log('files chosen: ', files);
-
   const uploadRequests = [];
   for (let i = 0; i < files.length; i += 1) {
     const f = files.item(i);
     if (f === null) {
-      console.log('skipping file...');
       // Nothing else we can do.
       continue;
     }
-    console.log('f:', f.name);
 
     const formData = new FormData();
     formData.append('name', f.name);
     formData.append('size', f.size.toString());
     formData.append('id', uuidv4());
     formData.append('file', f);
-    console.log('form:', Object.values(formData));
     uploadRequests.push(
       fetch('/upload', {
         method: 'POST',
@@ -45,12 +40,10 @@ function handleUpload(
     );
   }
 
-  console.log('upload reqs: ', uploadRequests);
   Promise.all(uploadRequests)
     .then((responses) => {
       responses.forEach(async (resp) => {
         const f = await resp.json();
-        console.log('req res: ', f);
         if (resp.status === 200) {
           addFile(f);
         }
