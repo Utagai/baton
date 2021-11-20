@@ -1,11 +1,11 @@
 import sqlite from 'better-sqlite3';
 
-import File from './File';
+import FileMetadata from './FileMetadata';
 
 export interface FilesDB {
-  getAllFiles(): File[];
-  getFile(id: string): File | undefined;
-  addFile(f: File): number;
+  getAllFiles(): FileMetadata[];
+  getFile(id: string): FileMetadata | undefined;
+  addFile(f: FileMetadata): number;
   deleteFile(id: string): number;
   deleteExpiredFiles(): number;
 }
@@ -34,18 +34,18 @@ export class SQLiteFilesDB implements FilesDB {
     }
   }
 
-  getAllFiles(): File[] {
+  getAllFiles(): FileMetadata[] {
     return this.db.prepare(`SELECT * FROM ${this.tableName}`).all();
   }
 
-  getFile(id: string): File | undefined {
+  getFile(id: string): FileMetadata | undefined {
     const selectStmt = this.db.prepare(
       `SELECT * FROM ${this.tableName} WHERE id = @id`,
     );
     return selectStmt.get({ id });
   }
 
-  addFile(f: File): number {
+  addFile(f: FileMetadata): number {
     const insertStmt = this.db.prepare(
       `INSERT INTO ${this.tableName} (id, name, size, uploadTime, expireTime) ` +
         'VALUES(@id, @name, @size, @uploadTime, @expireTime)',

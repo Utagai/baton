@@ -1,4 +1,4 @@
-type File = {
+type FileMetadata = {
   name: string;
   size: number;
   id: string;
@@ -6,4 +6,4 @@ type File = {
   expireTime: Date;
 };
 
-export default File;
+export default FileMetadata;

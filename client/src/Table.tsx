@@ -1,9 +1,12 @@
 import './index.css';
 import FileRows from './FileRows';
 import TableHeader from './TableHeader';
-import file from './types';
+import FileMetadata from './FileMetadata';
 
-const Table = (props: { files: file[]; deleteFile: (id: string) => void }) => {
+const Table = (props: {
+  files: FileMetadata[];
+  deleteFile: (id: string) => void;
+}) => {
   const { files, deleteFile } = props;
 
   return (

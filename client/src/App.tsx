@@ -6,7 +6,7 @@ import Banner from './Banner';
 import Table from './Table';
 import UploadButtons from './UploadButtons';
 import CustomText from './CustomText';
-import file from './types';
+import FileMetadata from './FileMetadata';
 
 async function callBackendAPI(endpoint: string, method: string) {
   const response = await fetch(endpoint, { method });
@@ -29,7 +29,7 @@ async function getCurrentFiles() {
 }
 
 const App = () => {
-  const [files, setFiles] = React.useState<file[]>([]);
+  const [files, setFiles] = React.useState<FileMetadata[]>([]);
   const textInputRef = React.useRef<HTMLDivElement>(null);
 
   const debounceInterval = 250;
@@ -71,7 +71,7 @@ const App = () => {
       />
 
       <UploadButtons
-        addFile={(f: file) => {
+        addFile={(f: FileMetadata) => {
           setFiles(files.concat([f]));
         }}
         writeFileAction={() => {
@@ -98,7 +98,7 @@ const App = () => {
       <CustomText
         textInputAreaRef={textInputRef}
         // TODO: Is this little wrapping code around setFiles being duplicated?
-        addFileToState={(f: file) => {
+        addFileToState={(f: FileMetadata) => {
           setFiles(files.concat([f]));
         }}
       />

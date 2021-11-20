@@ -2,13 +2,13 @@ import React, { useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import './index.css';
-import file from './types';
+import FileMetadata from './FileMetadata';
 import Button from './Button';
 
 // TODO: Maybe this should exist in App.tsx and passed down here?
 function handleUpload(
   event: React.ChangeEvent<HTMLInputElement>,
-  addFile: (f: file) => void,
+  addFile: (f: FileMetadata) => void,
 ) {
   const {
     currentTarget: { files },
@@ -54,7 +54,7 @@ function handleUpload(
 
 function UploadButtons(props: {
   writeFileAction: () => void;
-  addFile: (f: file) => void;
+  addFile: (f: FileMetadata) => void;
 }) {
   const { writeFileAction, addFile } = props;
   const fileUploadInputRef = useRef<HTMLInputElement>(null);

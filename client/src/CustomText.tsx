@@ -3,14 +3,13 @@ import { TextEncoder } from 'util';
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-// TODO: Is it actually good practice to have a types.ts?
-import file from './types';
+import FileMetadata from './FileMetadata';
 import Button from './Button';
 
 function handleUpload(
   textInputAreaRef: React.RefObject<HTMLDivElement>,
   textAreaText: string,
-  addFileToState: (f: file) => void,
+  addFileToState: (f: FileMetadata) => void,
 ) {
   if (textInputAreaRef.current !== null) {
     const textAreaBytes = new TextEncoder().encode(textAreaText);
@@ -48,7 +47,7 @@ function handleUpload(
 
 function CustomText(props: {
   textInputAreaRef: React.RefObject<HTMLDivElement>;
-  addFileToState: (f: file) => void;
+  addFileToState: (f: FileMetadata) => void;
 }) {
   const [textAreaText, setTextAreaText] = React.useState<string>('');
   const { textInputAreaRef, addFileToState } = props;

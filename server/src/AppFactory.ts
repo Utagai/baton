@@ -6,7 +6,7 @@ import process from 'process';
 import pino from 'pino';
 
 import { FilesDB } from './FilesDB';
-import File from './File';
+import FileMetadata from './FileMetadata';
 
 // AppFactory hides much of the actual configuration of the express server,
 // namely, its routes and some dependent components like the sqlite client.
@@ -85,7 +85,7 @@ function AppFactory(
       );
       return;
     }
-    const file: File = {
+    const file: FileMetadata = {
       name: uploadRequest.name,
       size: parseInt(uploadRequest.size, 10),
       id: uploadRequest.id,

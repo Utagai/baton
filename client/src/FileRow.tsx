@@ -3,7 +3,7 @@ import prettyBytes from 'pretty-bytes';
 
 import Button from './Button';
 import './index.css';
-import file from './types';
+import FileMetadata from './FileMetadata';
 
 // This function won't be something we can test in jest, we'd need true E2E
 // testing for it.
@@ -37,7 +37,7 @@ function handleDelete(id: string, deleteFileFromState: (_: string) => void) {
 }
 
 function FileRow(props: {
-  f: file;
+  f: FileMetadata;
   deleteFileFromState: (id: string) => void;
 }) {
   const {

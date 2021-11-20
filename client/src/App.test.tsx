@@ -5,7 +5,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { v4 as uuidv4 } from 'uuid';
 import userEvent from '@testing-library/user-event';
 
-import file from './types';
+import FileMetadata from './FileMetadata';
 import App from './App';
 
 const server = setupServer(

@@ -4,7 +4,7 @@ import request from 'supertest';
 import pino from 'pino';
 import { addDays } from 'date-fns';
 
-import File from './File';
+import FileMetadata from './FileMetadata';
 import { SQLiteFilesDB } from './FilesDB';
 import AppFactory from './AppFactory';
 
@@ -213,9 +213,9 @@ describe('upload', () => {
     const fileUploadPath = testUploadPath;
     const defaultFileLifetimeInDays = testDefaultFileLifetime;
     const mockedFilesDB = {
-      getAllFiles: () => [] as File[],
-      getFile: (_: string) => undefined as File | undefined,
-      addFile: (_: File) => 0,
+      getAllFiles: () => [] as FileMetadata[],
+      getFile: (_: string) => undefined as FileMetadata | undefined,
+      addFile: (_: FileMetadata) => 0,
       deleteFile: (_: string) => 0,
       deleteExpiredFiles: () => 0,
     };
