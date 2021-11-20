@@ -5,7 +5,6 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { v4 as uuidv4 } from 'uuid';
 import userEvent from '@testing-library/user-event';
 
-import FileMetadata from './FileMetadata';
 import App from './App';
 
 const server = setupServer(
@@ -41,13 +40,13 @@ describe('app', () => {
 
   test('renders write-a-file button', () => {
     render(<App />);
-    const writeAFileButton = screen.getByText('📝 Write a file');
+    const writeAFileButton = screen.getByText(/Write a file/);
     expect(writeAFileButton).toBeInTheDocument();
   });
 
   test('renders upload-a-file button', () => {
     render(<App />);
-    const uploadAFileButton = screen.getByText('📂 Upload a file');
+    const uploadAFileButton = screen.getByText(/Upload a file/);
     expect(uploadAFileButton).toBeInTheDocument();
   });
 
@@ -56,7 +55,7 @@ describe('app', () => {
 
     const textArea = screen.getByRole('textbox');
     expect(textArea).toBeInTheDocument();
-    const uploadContentsFileButton = screen.getByText('🛫 Upload contents');
+    const uploadContentsFileButton = screen.getByText(/Upload contents/);
     expect(uploadContentsFileButton).toBeInTheDocument();
 
     // Before clicking, the text area and submit button should not be visible:
@@ -69,7 +68,7 @@ describe('app', () => {
       Object.values(uploadContentsFileButton.parentElement!.classList),
     ).toContain('invisible');
 
-    const writeAFileButton = screen.getByText('📝 Write a file');
+    const writeAFileButton = screen.getByText(/Write a file/);
 
     // Due to the note above about how Tailwind primitives aren't expanded
     // during tests, expect(textArea).toBeVisible() will actually _pass_ at
@@ -167,8 +166,6 @@ describe('app', () => {
 
     // Wait for React to paint the Delete button.
     await waitFor(() => {
-      // NOTE: I don't use the wastebasket emoji here because for some reason,
-      // that emoji + my terminal font gives me really wack unicode issues.
       const deleteButton = screen.getByText(/Delete/);
       expect(deleteButton).toBeInTheDocument();
       deleteButton.click();
@@ -274,7 +271,7 @@ describe('app', () => {
 
       await waitFor(() => {
         // Wait for React to paint the Upload button.
-        const uploadButton = screen.getByText('📂 Upload a file');
+        const uploadButton = screen.getByText(/Upload a file/);
         expect(uploadButton).toBeInTheDocument();
         act(() => {
           userEvent.click(uploadButton);
@@ -304,8 +301,7 @@ describe('app', () => {
 
       // Wait for React to paint the Upload button.
       await waitFor(() => {
-        // TODO: Get rid of the emojis, please.
-        const writeAFileButton = screen.getByText('📝 Write a file');
+        const writeAFileButton = screen.getByText(/Write a file/);
         writeAFileButton.click();
         const textArea = screen.getByRole('textbox');
         act(() => {
