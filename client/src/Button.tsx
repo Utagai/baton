@@ -1,6 +1,4 @@
 function Button(props: {
-  // TODO: I think we can make this into 'children: string', and avoid having to
-  // use an extra prop.
   children: string;
   ariaLabel: string;
   onClick: () => void;
