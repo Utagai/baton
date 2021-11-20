@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 // This is unfortunately duplicated in both the client and server code. Probably
 // the right thing to do is to export these types out to a module and use that
 // module as a dep in both client/server but since this project is quite small
