@@ -98,7 +98,7 @@ const App = () => {
       <CustomText
         textInputAreaRef={textInputRef}
         // TODO: Is this little wrapping code around setFiles being duplicated?
-        addFileToState={(f: FileMetadata) => {
+        addMetadataToState={(f: FileMetadata) => {
           setFiles(files.concat([f]));
         }}
       />
