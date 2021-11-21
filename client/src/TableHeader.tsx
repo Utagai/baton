@@ -1,7 +1,7 @@
 import './index.css';
 
 const TableHeader = () => (
-  <thead className="">
+  <thead>
     <tr className="border-2 border-b-gray-500">
       <th className="bg-gray-200 text-gray-500 text-xs text-left px-10 uppercase tracking-wider py-2">
         File
