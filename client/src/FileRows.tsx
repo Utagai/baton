@@ -3,12 +3,16 @@ import FileRow from './FileRow';
 import FileMetadata from './FileMetadata';
 
 function FileRows(props: {
-  files: FileMetadata[];
-  deleteFile: (id: string) => void;
+  metadatas: FileMetadata[];
+  deleteMetadataFromState: (fileId: string) => void;
 }) {
-  const { files, deleteFile } = props;
-  const rows = files.map((f: FileMetadata) => (
-    <FileRow key={f.id} metadata={f} deleteMetadataFromState={deleteFile} />
+  const { metadatas, deleteMetadataFromState } = props;
+  const rows = metadatas.map((metadata: FileMetadata) => (
+    <FileRow
+      key={metadata.id}
+      metadata={metadata}
+      deleteMetadataFromState={deleteMetadataFromState}
+    />
   ));
 
   return <tbody>{rows}</tbody>;

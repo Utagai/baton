@@ -15,7 +15,7 @@ describe('FileRows', () => {
       }));
     const table = document.createElement('table');
     const { container } = render(
-      <FileRows files={files} deleteFile={() => {}} />,
+      <FileRows metadatas={files} deleteMetadataFromState={() => {}} />,
       {
         container: document.body.appendChild(table),
       },
