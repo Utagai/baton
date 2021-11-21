@@ -5,90 +5,114 @@ import './index.css';
 import FileMetadata from './FileMetadata';
 import Button from './Button';
 
-// TODO: Maybe this should exist in App.tsx and passed down here?
-function handleUpload(
-  event: React.ChangeEvent<HTMLInputElement>,
-  addFile: (f: FileMetadata) => void,
+function uploadFileToBackend(
+  file: File,
+  addMetadataToState: (metadata: FileMetadata) => void,
 ) {
-  const {
-    currentTarget: { files },
-  } = event;
-
-  if (files === null) {
-    // Nothing to do if so...
-    return;
-  }
-
-  const uploadRequests = [];
-  for (let i = 0; i < files.length; i += 1) {
-    const f = files.item(i);
-    if (f === null) {
-      // Nothing else we can do.
-      continue;
-    }
-
-    const formData = new FormData();
-    formData.append('name', f.name);
-    formData.append('size', f.size.toString());
-    formData.append('id', uuidv4());
-    formData.append('file', f);
-    uploadRequests.push(
-      fetch('/upload', {
-        method: 'POST',
-        body: formData,
-      }),
-    );
-  }
-
-  Promise.all(uploadRequests)
-    .then((responses) => {
-      responses.forEach(async (resp) => {
-        const f = await resp.json();
-        if (resp.status === 200) {
-          addFile(f);
-        }
-      });
+  const formData = new FormData();
+  formData.set('name', file.name);
+  formData.set('size', file.size.toString());
+  formData.set('id', uuidv4());
+  formData.set('file', file);
+  fetch('/upload', {
+    method: 'POST',
+    body: formData,
+  })
+    // A little bit of cleverness. We return a single promise that is a tuple of
+    // the JSON body + status code, so that when we handle the JSON body, we have
+    // the context of the response's status code to determine if the JSON body is
+    // actual metadata or a document describing error.
+    .then((resp) => Promise.all([resp.json(), Promise.resolve(resp.status)]))
+    .then(([json, statusCode]: [any, number]) => {
+      if (statusCode === 200) {
+        return addMetadataToState(json);
+      }
+      return Promise.reject(json);
     })
     .catch((err) => console.log('err from upload: ', err));
 }
 
+// This function is just useful because it gets rid of FileList | null
+// and File | null from the types, and converts FileList -> File[].
+function getFilesFromChangeEvent(
+  event: React.ChangeEvent<HTMLInputElement>,
+): File[] {
+  const {
+    currentTarget: { files: fileList },
+  } = event;
+
+  if (fileList === null) {
+    return [];
+  }
+
+  const filesArray: File[] = [];
+  for (let i = 0; i < fileList.length; i += 1) {
+    const file = fileList.item(i);
+    if (file === null) {
+      continue;
+    }
+
+    filesArray.push(file);
+  }
+
+  return filesArray;
+}
+
+function uploadButtons(
+  writeAFileOnClick: () => void,
+  fileUploadInputRef: React.RefObject<HTMLInputElement>,
+) {
+  return (
+    <>
+      <Button ariaLabel="Write a file" onClick={writeAFileOnClick}>
+        📝 Write a file
+      </Button>
+      <Button
+        ariaLabel="Upload a file"
+        // This just makes it so that we trigger the click action on our
+        // invisible file input. Once we've done that, the real action happens in
+        // the invisible input's onChange handler.
+        onClick={() => fileUploadInputRef.current?.click()}
+      >
+        📂 Upload a file
+      </Button>
+    </>
+  );
+}
+
+function hiddenInput(
+  fileUploadInputRef: React.RefObject<HTMLInputElement>,
+  addMetadataToState: (metadata: FileMetadata) => void,
+) {
+  return (
+    <input
+      className="hidden"
+      type="file"
+      ref={fileUploadInputRef}
+      data-testid="hidden-input-element"
+      onChange={(e) => {
+        getFilesFromChangeEvent(e).forEach((file) => {
+          uploadFileToBackend(file, addMetadataToState);
+        });
+      }}
+      multiple
+    />
+  );
+}
+
 function UploadButtons(props: {
-  writeFileAction: () => void;
-  addFile: (f: FileMetadata) => void;
+  writeAFileOnClick: () => void;
+  addMetadataToState: (metadata: FileMetadata) => void;
 }) {
-  const { writeFileAction, addFile } = props;
+  const { writeAFileOnClick, addMetadataToState } = props;
   const fileUploadInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="w-1/2 mt-3 mb-1.5 mx-10">
       <div className="grid place-items-center">
         <span>
-          <Button ariaLabel="Write a file" onClick={writeFileAction}>
-            📝 Write a file
-          </Button>
-          <Button
-            ariaLabel="Upload a file"
-            // This just makes it so that we trigger the click action on our
-            // invisible file input. Once we've done that, the real action happens in
-            // the invisible input's onChange handler.
-            // TODO: Is this maybe over-complicated? Maybe we can just get rid
-            // of this button and style the input element in the same way, and
-            // only rely on its onChange?
-            onClick={() => fileUploadInputRef.current?.click()}
-          >
-            📂 Upload a file
-          </Button>
-
-          <input
-            className="hidden"
-            type="file"
-            ref={fileUploadInputRef}
-            data-testid="hidden-input-element"
-            onChange={(e) => {
-              handleUpload(e, addFile);
-            }}
-            multiple
-          />
+          {uploadButtons(writeAFileOnClick, fileUploadInputRef)}
+          {hiddenInput(fileUploadInputRef, addMetadataToState)}
         </span>
       </div>
     </div>

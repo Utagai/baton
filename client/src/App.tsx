@@ -71,10 +71,10 @@ const App = () => {
       />
 
       <UploadButtons
-        addFile={(f: FileMetadata) => {
+        addMetadataToState={(f: FileMetadata) => {
           setFiles(files.concat([f]));
         }}
-        writeFileAction={() => {
+        writeAFileOnClick={() => {
           // Toggle the display visibility of the writing section div.
           if (textInputRef.current === null) {
             return;
