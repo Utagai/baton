@@ -64,8 +64,8 @@ const App = () => {
       <Banner />
 
       <Table
-        files={files}
-        deleteFile={(id: string) => {
+        metadatas={files}
+        deleteMetadataFromState={(id: string) => {
           setFiles(files.filter((f) => f.id !== id));
         }}
       />
