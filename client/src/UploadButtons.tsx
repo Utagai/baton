@@ -58,7 +58,7 @@ function getFilesFromChangeEvent(
   return filesArray;
 }
 
-function uploadButtons(
+function uploadButtonsElem(
   writeAFileOnClick: () => void,
   fileUploadInputRef: React.RefObject<HTMLInputElement>,
 ) {
@@ -80,7 +80,7 @@ function uploadButtons(
   );
 }
 
-function hiddenInput(
+function hiddenInputElem(
   fileUploadInputRef: React.RefObject<HTMLInputElement>,
   addMetadataToState: (metadata: FileMetadata) => void,
 ) {
@@ -111,8 +111,8 @@ function UploadButtons(props: {
     <div className="w-1/2 mt-3 mb-1.5 mx-10">
       <div className="grid place-items-center">
         <span>
-          {uploadButtons(writeAFileOnClick, fileUploadInputRef)}
-          {hiddenInput(fileUploadInputRef, addMetadataToState)}
+          {uploadButtonsElem(writeAFileOnClick, fileUploadInputRef)}
+          {hiddenInputElem(fileUploadInputRef, addMetadataToState)}
         </span>
       </div>
     </div>

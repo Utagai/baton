@@ -10,6 +10,10 @@ type FileMetadata = {
   name: string;
   size: number;
   id: string;
+  // These ideally would be dates, but better-sqlite3 returns these date columns
+  // as strings, so we have to do this to get the types right. We parse them
+  // into Dates when we need to.
+  // TODO: ^^^
   uploadTime: string;
   expireTime: string;
 };

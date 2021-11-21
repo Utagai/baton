@@ -8,7 +8,7 @@ function FileRows(props: {
 }) {
   const { files, deleteFile } = props;
   const rows = files.map((f: FileMetadata) => (
-    <FileRow key={f.id} f={f} deleteFileFromState={deleteFile} />
+    <FileRow key={f.id} metadata={f} deleteMetadataFromState={deleteFile} />
   ));
 
   return <tbody>{rows}</tbody>;

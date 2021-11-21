@@ -42,7 +42,7 @@ function uploadContentToBackend(
     .catch((err) => console.log('err from upload: ', err));
 }
 
-function textArea(setTextAreaText: (text: string) => void) {
+function textAreaElem(setTextAreaText: (text: string) => void) {
   return (
     <textarea
       placeholder=" ..."
@@ -54,7 +54,7 @@ function textArea(setTextAreaText: (text: string) => void) {
   );
 }
 
-function uploadButton(
+function uploadButtonElem(
   textInputAreaRef: React.RefObject<HTMLDivElement>,
   textAreaText: string,
   addMetadataToState: (f: FileMetadata) => void,
@@ -85,8 +85,8 @@ function CustomText(props: {
       ref={textInputAreaRef}
       className="w-1/2 grid place-items-center invisible"
     >
-      {textArea(setTextAreaText)}
-      {uploadButton(textInputAreaRef, textAreaText, addMetadataToState)}
+      {textAreaElem(setTextAreaText)}
+      {uploadButtonElem(textInputAreaRef, textAreaText, addMetadataToState)}
     </div>
   );
 }

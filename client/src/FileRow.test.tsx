@@ -16,7 +16,7 @@ describe('FileRow', () => {
 
     const tbody = document.createElement('tbody');
     const { container } = render(
-      <FileRow f={expectedFile} deleteFileFromState={() => {}} />,
+      <FileRow metadata={expectedFile} deleteMetadataFromState={() => {}} />,
       {
         container: document.body.appendChild(tbody),
       },
