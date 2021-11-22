@@ -13,6 +13,7 @@ const hideAfter = 5;
 enum NotifyKind {
   Success = 'SUCCESS',
   Info = 'INFO',
+  Loading = 'LOADING',
   Error = 'ERROR',
 }
 
@@ -65,6 +66,10 @@ function notify(notifyKind: NotifyKind, msg: string, details?: any) {
       notifyFunc = cogoToast.info;
       break;
     }
+    case NotifyKind.Loading: {
+      notifyFunc = cogoToast.loading;
+      break;
+    }
     case NotifyKind.Error: {
       notifyFunc = cogoToast.error;
       break;
@@ -82,6 +87,10 @@ export function success(msg: string, details?: any) {
 
 export function info(msg: string, details?: any) {
   notify(NotifyKind.Info, msg, details);
+}
+
+export function loading(msg: string, details?: any) {
+  notify(NotifyKind.Loading, msg, details);
 }
 
 export function error(msg: string, details?: any) {

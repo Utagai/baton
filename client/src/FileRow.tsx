@@ -4,7 +4,7 @@ import prettyBytes from 'pretty-bytes';
 import Button from './Button';
 import './index.css';
 import FileMetadata from './FileMetadata';
-import { error, info, success } from './Notify';
+import { error, loading, success } from './Notify';
 
 // This function won't be something we can test in jest, we'd need true E2E
 // testing for it.
@@ -23,7 +23,7 @@ function triggerDownload(id: string, filename: string) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  info('triggering download', { filename });
+  loading('triggering download', { filename });
 }
 
 function deleteFileOnBackend(
