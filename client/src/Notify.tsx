@@ -26,13 +26,9 @@ function sendNotification(
   let detailElems = <></>;
   if (details) {
     detailElems = (
-      <>
-        {Object.keys(details).map((key) => (
-          <p className="italic">
-            {key}: {details[key]}
-          </p>
-        ))}
-      </>
+      <pre className="italic">
+        <code>{JSON.stringify(details, null, 2)}</code>
+      </pre>
     );
   }
 
