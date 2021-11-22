@@ -1,19 +1,73 @@
 import { addDays, format, formatDuration, intervalToDuration } from 'date-fns';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { v4 as uuidv4 } from 'uuid';
 import userEvent from '@testing-library/user-event';
 
 import App from './App';
 
+// So this is tragic and I'm doing this because I just genuinely don't know how
+// else to do this in a way that does not involve a janky (and flaky) sleep
+// call. Basically, what is happening is that when the tests run, there is a
+// chance, especially for the very simple/cheap tests, that we finish the test
+// so quickly that the React code has not even had a chance to hit the backend
+// API yet. However, because stopping a test does not cancel currently running
+// React threads, namely, the useEffect thread, that API call actually does come
+// through, it just comes through later, after we've moved onto subsequent
+// tests. This however, and unfortunately, is pretty bad, because it means prior
+// tests can influence later tests.
+// Anyways, to address this, we are keeping track of two counts:
+//  * The number of tests currently ran so far.
+//  * The number of times we have hit the /files endpoint, which is the last API
+//  call we make in useEffect.
+// Then, in our afterEach(), we wait in a sleep-loop until we've hit the /files
+// API endpoint as many times as we have ran tests, ensuring that before we
+// start the next test, the current test has finished its useEffect and won't
+// run again.
+// This is not ideal and it is kind of hacky, I just don't know how else to do
+// this in a way that is either not flaky or equally hacky/dirty but in the
+// application code instead of the test code.
+// NOTE: One idea that I do have though is seeing if it is possible to create a
+// wholly separate server per test, e.g., on different ports. I don't see any
+// information in the MSW docs for how we could do this, so it may require us
+// scrapping it for something like express and running a backend server on
+// different ports for each test.
+let numTestsRanCount = 0;
+let filesEndpointCalledCount = 0;
+
 const server = setupServer(
-  rest.get('/files', (_, res, ctx) => res(ctx.json({ files: [] }))),
-  rest.delete('/deleteexpired', (_, res, ctx) => res(ctx.json({}))),
+  rest.get('/files', (_, res, ctx) => {
+    filesEndpointCalledCount += 1;
+    return res(
+      ctx.json({
+        files: [
+          {
+            name: 'DEFAULT /files HANDLER',
+            size: 1,
+            id: 'RENDERED',
+            uploadTime: new Date(),
+            expireTime: new Date(),
+          },
+        ],
+      }),
+    );
+  }),
+  rest.delete('/deleteexpired', (_, res, ctx) =>
+    res(ctx.json({ farking: true })),
+  ),
 );
 
 beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
+afterEach(async () => {
+  numTestsRanCount += 1;
+  while (filesEndpointCalledCount !== numTestsRanCount) {
+    /* eslint-disable no-await-in-loop */
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  cleanup();
+  server.resetHandlers();
+});
 afterAll(() => server.close());
 
 describe('app', () => {
@@ -108,7 +162,13 @@ describe('app', () => {
     expect(files.length).toBeLessThan(1000);
     const filesEndpointMock = jest.fn(() => ({ files }));
     server.use(
-      rest.get('/files', (_, res, ctx) => res(ctx.json(filesEndpointMock()))),
+      rest.get('/files', (_, res, ctx) => {
+        filesEndpointCalledCount += 1;
+        return res(ctx.json(filesEndpointMock()));
+      }),
+      rest.delete('/deleteexpired', (_, res, ctx) =>
+        res(ctx.json({ farking: false })),
+      ),
     );
 
     render(<App />);
@@ -153,9 +213,10 @@ describe('app', () => {
     // file has been deleted or not. If it has been deleted, we do not return it
     // from /files, otherwise we do.
     server.use(
-      rest.get('/files', (_, res, ctx) =>
-        res(ctx.json({ files: [originalFile] })),
-      ),
+      rest.get('/files', (_, res, ctx) => {
+        filesEndpointCalledCount += 1;
+        return res(ctx.json({ files: [originalFile] }));
+      }),
       rest.delete('/delete/:fileID', (req, res, ctx) => {
         expect(req.params.fileID).toEqual(originalFile.id);
         return res(ctx.json({ id: req.params.fileID }));
@@ -223,6 +284,7 @@ describe('app', () => {
 
       server.use(
         rest.get('/files', (_, res, ctx) => {
+          filesEndpointCalledCount += 1;
           filesCalled = true;
           if (uploadCalled) {
             return res(
