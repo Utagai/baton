@@ -6,6 +6,7 @@ import Table from './Table';
 import UploadButtons from './UploadButtons';
 import CustomText from './CustomText';
 import FileMetadata from './FileMetadata';
+import { error, info } from './Notify';
 
 async function callBackendAPI(endpoint: string, method: string) {
   const response = await fetch(endpoint, { method });
@@ -83,13 +84,14 @@ const App = () => {
   React.useEffect(() => {
     let mounted = true;
     getCurrentFileMetadatas()
-      .then((metadata) => {
-        if (metadata !== undefined && mounted) {
-          setMetadatas(metadata.files);
+      .then((resp) => {
+        if (resp !== undefined && mounted) {
+          setMetadatas(resp.files);
+          info('fetched files', { 'number of files': resp.files.length });
         }
       })
       .catch((err) => {
-        throw Error(`failed to get files from backend: ${err}`);
+        error('failed to fetch files', err);
       });
 
     // We have to return this weird clean-up function because it is possible

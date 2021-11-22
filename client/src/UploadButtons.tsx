@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import './index.css';
 import FileMetadata from './FileMetadata';
 import Button from './Button';
+import { error, success } from './Notify';
 
 function uploadFileToBackend(
   file: File,
@@ -25,11 +26,12 @@ function uploadFileToBackend(
     .then((resp) => Promise.all([resp.json(), Promise.resolve(resp.status)]))
     .then(([json, statusCode]: [any, number]) => {
       if (statusCode === 200) {
-        return addMetadataToState(json);
+        addMetadataToState(json);
+        return success('filename', { filename: file.name });
       }
       return Promise.reject(json);
     })
-    .catch((err) => console.log('err from upload: ', err));
+    .catch((err) => error('failed to upload', err));
 }
 
 // This function is just useful because it gets rid of FileList | null

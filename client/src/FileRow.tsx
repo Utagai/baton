@@ -4,6 +4,7 @@ import prettyBytes from 'pretty-bytes';
 import Button from './Button';
 import './index.css';
 import FileMetadata from './FileMetadata';
+import { error, info, success } from './Notify';
 
 // This function won't be something we can test in jest, we'd need true E2E
 // testing for it.
@@ -22,6 +23,7 @@ function triggerDownload(id: string, filename: string) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+  info('triggering download', { filename });
 }
 
 function deleteFileOnBackend(
@@ -33,12 +35,10 @@ function deleteFileOnBackend(
   })
     .then(async () => {
       deleteMetadataFromState(fileId);
+      success('deleted file');
     })
     .catch((err) => {
-      // TODO: We need to be consistent about these errors. Namely, I think we
-      // need to come up with a way to present notifications about these issues
-      // to the user gracefully.
-      throw Error(`error from /delete call: ${err}`);
+      error('error from /delete call', err);
     });
 }
 

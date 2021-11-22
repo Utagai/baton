@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import FileMetadata from './FileMetadata';
 import Button from './Button';
+import { error, success } from './Notify';
 
 function createFileNameFromContent(content: string): string {
   return `${content
@@ -19,7 +20,8 @@ function uploadContentToBackend(
   const textAreaBlob = new Blob([textAreaText]);
 
   const formData = new FormData();
-  formData.append('name', createFileNameFromContent(textAreaText));
+  const customFilename = createFileNameFromContent(textAreaText);
+  formData.append('name', customFilename);
   formData.append('size', `${textAreaBlob.size}`);
   formData.append('id', uuidv4());
   formData.append('file', textAreaBlob);
@@ -35,11 +37,12 @@ function uploadContentToBackend(
     .then((resp) => Promise.all([resp.json(), Promise.resolve(resp.status)]))
     .then(([json, statusCode]: [any, number]) => {
       if (statusCode === 200) {
-        return addMetadataToState(json);
+        addMetadataToState(json);
+        return success('uploaded custom text', { filename: customFilename });
       }
       return Promise.reject(json);
     })
-    .catch((err) => console.log('err from upload: ', err));
+    .catch((err) => error('failed to upload', err));
 }
 
 function textAreaElem(setTextAreaText: (text: string) => void) {
