@@ -28,7 +28,7 @@ function triggerDownload(id: string, filename: string) {
 
 function deleteFileOnBackend(
   fileId: string,
-  deleteMetadataFromState: (innerFileId: string) => void,
+  deleteMetadataFromState: (fileId: string) => void,
 ) {
   fetch(`/delete/${fileId}`, {
     method: 'DELETE',
@@ -79,7 +79,7 @@ function expireTimeLeftElem(expireTime: string) {
 function fileRowButtonsElem(
   fileId: string,
   name: string,
-  deleteFileFromState: (innerFileId: string) => void,
+  deleteFileFromState: (fileId: string) => void,
 ) {
   return (
     <td className="font-normal border-b">

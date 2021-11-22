@@ -58,5 +58,7 @@ module.exports = {
       'error',
       { devDependencies: ['**/*.test.ts', '**/*.test.tsx'] },
     ],
+    'no-shadow': 'off',
+    '@typescript-eslint/no-shadow': ['error'],
   },
 };
