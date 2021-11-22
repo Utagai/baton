@@ -13,8 +13,7 @@ async function callBackendAPI(endpoint: string, method: string) {
   const body = await response.json();
 
   if (response.status !== 200) {
-    // TODO: This should be handled/propagated better.
-    throw Error(body);
+    return Promise.reject(body);
   }
 
   return body;
@@ -69,7 +68,6 @@ function customTextElem(
   return (
     <CustomText
       textInputAreaRef={textInputRef}
-      // TODO: Is this little wrapping code around setFiles being duplicated?
       addMetadataToState={(metadata: FileMetadata) => {
         setMetadatas(metadatas.concat([metadata]));
       }}
