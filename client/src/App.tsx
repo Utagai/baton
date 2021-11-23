@@ -73,11 +73,8 @@ function customTextElem(
   );
 }
 
-const App = () => {
-  const [metadatas, setMetadatas] = React.useState<FileMetadata[]>([]);
-  const textInputRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
+function onMount(setMetadatas: (metdatas: FileMetadata[]) => void) {
+  return () => {
     let mounted = true;
     getCurrentFileMetadatas()
       .then((resp) => {
@@ -104,8 +101,15 @@ const App = () => {
     return () => {
       mounted = false;
     };
-    // useEffect with a state of [] runs only once, at mount time.
-  }, []);
+  };
+}
+
+const App = () => {
+  const [metadatas, setMetadatas] = React.useState<FileMetadata[]>([]);
+  const textInputRef = React.useRef<HTMLDivElement>(null);
+
+  // useEffect with a state of [] runs only once, at mount time.
+  React.useEffect(onMount(setMetadatas), []);
 
   const writeAFileOnClick = () => {
     // Toggle the display visibility of the writing section div.
