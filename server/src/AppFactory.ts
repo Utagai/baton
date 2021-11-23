@@ -4,8 +4,13 @@ import { addDays } from 'date-fns';
 import path from 'path';
 import process from 'process';
 import pino from 'pino';
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
+import csurf from 'csurf';
 
+import { UsersDB } from './UsersDB';
 import { FilesDB } from './FilesDB';
+import { passwordMatchesHash } from './Password';
 import FileMetadata from './FileMetadata';
 
 // AppFactory hides much of the actual configuration of the express server,
@@ -15,13 +20,20 @@ import FileMetadata from './FileMetadata';
 // the fly.
 function AppFactory(
   logger: pino.Logger,
+  usersDB: UsersDB,
   filesDB: FilesDB,
   fileUploadPath: string,
   fileLifetimeInDays: number,
 ): express.Express {
   const app = express();
+  // TODO: We should also add 'secure' here for production.
+  const csrfProtection = csurf({ cookie: { httpOnly: true } });
+
   app.use(express.json());
   app.use(fileUpload());
+  app.use(cookieParser());
+
+  // Middleware for logging each request that comes in.
   app.use(
     (
       req: express.Request,
@@ -49,11 +61,27 @@ function AppFactory(
       next();
     },
   );
-  // Make it so that we only ever return application/json by default.
+
+  // Middleware for only ever returning application/json by default.
   app.use((_req, res, next) => {
     res.contentType('application/json');
     next();
   });
+
+  // Middleware for verifying the JWT tokens.
+  const mustBeLoggedIn = (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) => {
+    jwt.verify(req.cookies.cookieToken, process.env.JWT_SECRET, (err, _) => {
+      if (err) {
+        res.redirect('/');
+      } else {
+        next();
+      }
+    });
+  };
 
   // sendErr is a tiny helper for returning JSON errors from the express endpoints.
   const sendErr = (
@@ -65,7 +93,7 @@ function AppFactory(
   };
 
   // /files returns a listing of all the files, _including_ expired files.
-  app.get('/files', (_, res) => {
+  app.get('/files', csrfProtection, mustBeLoggedIn, (_, res) => {
     const files = filesDB.getAllFiles();
     res.send({
       files,
@@ -167,6 +195,28 @@ function AppFactory(
         res.send({ msg: err.message });
       }
     });
+  });
+
+  // /download/:id returns the file specified by :id as a downloadable file. This
+  // should trigger a download in the user's browser.
+  app.post('/login', (req, res) => {
+    const {
+      body: { username, password: plaintextPassword },
+    } = req;
+
+    const user = usersDB.getUser(username);
+
+    if (
+      user !== undefined &&
+      passwordMatchesHash(plaintextPassword, user.passwordHashInfo)
+    ) {
+      return res.send({
+        token: jwt.sign({ username }, process.env.JWT_SECRET),
+      });
+    }
+
+    res.status(401);
+    return res.send({ err: 'failed authentication' });
   });
 
   app.use(

@@ -25,6 +25,7 @@ function uploadContentToBackend(
   formData.append('size', `${textAreaBlob.size}`);
   formData.append('id', uuidv4());
   formData.append('file', textAreaBlob);
+  // TODO: Do we need to specify any particular headers here?
   fetch('/upload', {
     method: 'POST',
     body: formData,

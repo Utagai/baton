@@ -164,7 +164,6 @@ describe('upload', () => {
       .expect(500)
       .expect('Content-Type', /json/)
       .then((resp) => {
-        console.log('resp body:', resp.body);
         expect(resp.body).toEqual({
           msg: 'cannot upload more than 1 file',
           attemptedCount: 2,
@@ -186,7 +185,6 @@ describe('upload', () => {
       .expect(500)
       .expect('Content-Type', /json/)
       .then((resp) => {
-        console.log('resp body:', resp.body);
         expect(resp.body).toEqual({
           msg: 'expected "name", "id", and "size" parameters in the form data',
           got: {
@@ -236,7 +234,6 @@ describe('upload', () => {
       .expect(500)
       .expect('Content-Type', /json/)
       .then((resp) => {
-        console.log('resp body:', resp.body);
         expect(resp.body).toEqual({
           msg: 'failed to persist upload to metadata',
           numChanged: 0,
