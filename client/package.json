@@ -24,7 +24,7 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test --coverage --watchAll=false",
+    "test": "export DEBUG_PRINT_LIMIT=999999; craco test --coverage --watchAll=false",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
