@@ -59,10 +59,15 @@ const server = setupServer(
 beforeAll(() => server.listen());
 afterEach(async () => {
   numTestsRanCount += 1;
-  while (filesEndpointCalledCount !== numTestsRanCount) {
-    /* eslint-disable no-await-in-loop */
-    await new Promise((r) => setTimeout(r, 100));
-  }
+  // We need to run this in an act because things like the endpoint returning +
+  // in-flight toast notifications can cause updates that are actually OK but
+  // React would otherwise complain about.
+  await act(async () => {
+    while (filesEndpointCalledCount !== numTestsRanCount) {
+      /* eslint-disable no-await-in-loop */
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  });
   cleanup();
   server.resetHandlers();
 });
