@@ -46,14 +46,13 @@ function tableElem(
 }
 
 function uploadButtonsElem(
-  metadatas: FileMetadata[],
-  setMetadatas: (newMetadatas: FileMetadata[]) => void,
+  pushMetadatas: (newMetadata: FileMetadata) => void,
   writeAFileOnClick: () => void,
 ) {
   return (
     <UploadButtons
       addMetadataToState={(metadata: FileMetadata) => {
-        setMetadatas(metadatas.concat([metadata]));
+        pushMetadatas(metadata);
       }}
       writeAFileOnClick={writeAFileOnClick}
     />
@@ -61,15 +60,14 @@ function uploadButtonsElem(
 }
 
 function customTextElem(
-  metadatas: FileMetadata[],
-  setMetadatas: (newMetadatas: FileMetadata[]) => void,
+  pushMetadatas: (newMetadata: FileMetadata) => void,
   textInputRef: React.RefObject<HTMLDivElement>,
 ) {
   return (
     <CustomText
       textInputAreaRef={textInputRef}
       addMetadataToState={(metadata: FileMetadata) => {
-        setMetadatas(metadatas.concat([metadata]));
+        pushMetadatas(metadata);
       }}
     />
   );
@@ -128,15 +126,21 @@ const App = () => {
     }
   };
 
+  const pushMetadata = (newMetadata: FileMetadata) => {
+    setMetadatas((pastMetadatas: FileMetadata[]) =>
+      pastMetadatas.concat(newMetadata),
+    );
+  };
+
   return (
     <div className="grid place-items-center">
       <Banner />
 
       {tableElem(metadatas, setMetadatas)}
 
-      {uploadButtonsElem(metadatas, setMetadatas, writeAFileOnClick)}
+      {uploadButtonsElem(pushMetadata, writeAFileOnClick)}
 
-      {customTextElem(metadatas, setMetadatas, textInputRef)}
+      {customTextElem(pushMetadata, textInputRef)}
     </div>
   );
 };

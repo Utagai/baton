@@ -272,40 +272,34 @@ describe('app', () => {
 
     function startServer(): () => {
       filesCalled: boolean;
-      uploadCalled: boolean;
+      uploadEndpointCalledCount: number;
     } {
       // It is possible that /files gets called for the first time _after_ /upload
       // gets called. If this happens, then we won't be testing that our upload is
       // properly updating the state, we'll just be making sure we update the
       // state accordingly with the backend, which is a separate test.
       let filesCalled = false;
-      let uploadCalled = false;
+      let uploadEndpointCalledCount = 0;
       const fileContents = 'text';
 
       server.use(
         rest.get('/files', (_, res, ctx) => {
           filesEndpointCalledCount += 1;
           filesCalled = true;
-          if (uploadCalled) {
-            return res(
-              ctx.json({
-                files: [
-                  {
-                    name: `${fileContents}.txt`,
-                    size: fileContents.length,
-                    id: uuidv4(),
-                    uploadTime: new Date().toISOString(),
-                    expireTime: new Date().toISOString(),
-                  },
-                ],
-              }),
-            );
-          }
-
-          return res(ctx.json({ files: [] }));
+          return res(
+            ctx.json({
+              files: Array(uploadEndpointCalledCount).map(() => ({
+                name: `${fileContents}.txt`,
+                size: fileContents.length,
+                id: uuidv4(),
+                uploadTime: new Date().toISOString(),
+                expireTime: new Date().toISOString(),
+              })),
+            }),
+          );
         }),
         rest.post('/upload', (_, res, ctx) => {
-          uploadCalled = true;
+          uploadEndpointCalledCount += 1;
           return res(
             ctx.json({
               name: `${fileContents}.txt`,
@@ -318,7 +312,7 @@ describe('app', () => {
         }),
       );
 
-      return () => ({ filesCalled, uploadCalled });
+      return () => ({ filesCalled, uploadEndpointCalledCount });
     }
 
     test('file', async () => {
@@ -347,12 +341,48 @@ describe('app', () => {
       });
 
       await waitFor(() => {
-        expect(getEndpointCalledStatuses().uploadCalled).toBeTruthy();
+        expect(getEndpointCalledStatuses().uploadEndpointCalledCount).toBe(1);
         expect(screen.getByText(`${fileContents}.txt`)).toBeInTheDocument();
       });
     });
 
-    test('custom contents', async () => {
+    test('more than one file', async () => {
+      const getEndpointCalledStatuses = startServer();
+      const fileContents = 'text';
+
+      render(<App />);
+
+      await waitFor(() => {
+        expect(getEndpointCalledStatuses().filesCalled).toBeTruthy();
+      });
+
+      await waitFor(() => {
+        // Wait for React to paint the Upload button.
+        const uploadButton = screen.getByText(/Upload a file/);
+        expect(uploadButton).toBeInTheDocument();
+        act(() => {
+          userEvent.click(uploadButton);
+        });
+
+        const inputElement = screen.getByTestId('hidden-input-element');
+        const fileToUpload1 = new File(['hello'], 'hello1.txt', {
+          type: 'text',
+        });
+        const fileToUpload2 = new File(['hello'], 'hello2.txt', {
+          type: 'text',
+        });
+        act(() => {
+          userEvent.upload(inputElement, [fileToUpload1, fileToUpload2]);
+        });
+      });
+
+      await waitFor(() => {
+        expect(getEndpointCalledStatuses().uploadEndpointCalledCount).toBe(2);
+        expect(screen.getAllByText(`${fileContents}.txt`).length).toBe(2);
+      });
+    });
+
+    test('custom content', async () => {
       const getEndpointCalledStatuses = startServer();
       const fileContents = 'text';
       render(<App />);
