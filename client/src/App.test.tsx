@@ -53,9 +53,7 @@ const server = setupServer(
       }),
     );
   }),
-  rest.delete('/deleteexpired', (_, res, ctx) =>
-    res(ctx.json({ farking: true })),
-  ),
+  rest.delete('/deleteexpired', (_, res, ctx) => res(ctx.json({}))),
 );
 
 beforeAll(() => server.listen());
@@ -166,9 +164,6 @@ describe('app', () => {
         filesEndpointCalledCount += 1;
         return res(ctx.json(filesEndpointMock()));
       }),
-      rest.delete('/deleteexpired', (_, res, ctx) =>
-        res(ctx.json({ farking: false })),
-      ),
     );
 
     render(<App />);
