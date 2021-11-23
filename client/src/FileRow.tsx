@@ -30,12 +30,17 @@ function deleteFileOnBackend(
   fileId: string,
   deleteMetadataFromState: (fileId: string) => void,
 ) {
+  // TODO: This is duplicated in upload as well.
   fetch(`/delete/${fileId}`, {
     method: 'DELETE',
   })
-    .then(async () => {
+    .then((resp) => Promise.all([resp.json(), Promise.resolve(resp.status)]))
+    .then(([json, statusCode]) => {
+      if (statusCode !== 200) {
+        return Promise.reject(json);
+      }
       deleteMetadataFromState(fileId);
-      success('deleted file');
+      return success('deleted file');
     })
     .catch((err) => {
       error('error from /delete call', err);

@@ -58,7 +58,6 @@ function textAreaElem(setTextAreaText: (text: string) => void) {
 }
 
 function uploadButtonElem(
-  textInputAreaRef: React.RefObject<HTMLDivElement>,
   textAreaText: string,
   addMetadataToState: (f: FileMetadata) => void,
 ) {
@@ -66,9 +65,7 @@ function uploadButtonElem(
     <Button
       ariaLabel="Upload contents"
       onClick={() => {
-        if (textInputAreaRef !== null) {
-          uploadContentToBackend(textAreaText, addMetadataToState);
-        }
+        uploadContentToBackend(textAreaText, addMetadataToState);
       }}
     >
       🛫 Upload contents
@@ -89,7 +86,7 @@ function CustomText(props: {
       className="w-1/2 grid place-items-center invisible"
     >
       {textAreaElem(setTextAreaText)}
-      {uploadButtonElem(textInputAreaRef, textAreaText, addMetadataToState)}
+      {uploadButtonElem(textAreaText, addMetadataToState)}
     </div>
   );
 }

@@ -109,6 +109,7 @@ const App = () => {
 
   const writeAFileOnClick = () => {
     // Toggle the display visibility of the writing section div.
+    /* istanbul ignore next */
     if (textInputRef.current === null) {
       return;
     }

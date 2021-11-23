@@ -36,20 +36,20 @@ import App from './App';
 let numTestsRanCount = 0;
 let filesEndpointCalledCount = 0;
 
+const filesEndpointDefaultFile = {
+  name: 'DEFAULT /files HANDLER',
+  size: 1,
+  id: 'RENDERED',
+  uploadTime: new Date(),
+  expireTime: new Date(),
+};
+
 const server = setupServer(
   rest.get('/files', (_, res, ctx) => {
     filesEndpointCalledCount += 1;
     return res(
       ctx.json({
-        files: [
-          {
-            name: 'DEFAULT /files HANDLER',
-            size: 1,
-            id: 'RENDERED',
-            uploadTime: new Date(),
-            expireTime: new Date(),
-          },
-        ],
+        files: [filesEndpointDefaultFile],
       }),
     );
   }),
@@ -227,7 +227,7 @@ describe('app', () => {
 
     // Wait for React to paint the Delete button.
     await waitFor(() => {
-      const deleteButton = screen.getByText(/Delete/);
+      const deleteButton = screen.getByText(/🗑️ Delete/);
       expect(deleteButton).toBeInTheDocument();
       deleteButton.click();
     });
@@ -327,7 +327,7 @@ describe('app', () => {
 
       await waitFor(() => {
         // Wait for React to paint the Upload button.
-        const uploadButton = screen.getByText(/Upload a file/);
+        const uploadButton = screen.getByText(/📂 Upload a file/);
         expect(uploadButton).toBeInTheDocument();
         act(() => {
           userEvent.click(uploadButton);
@@ -358,7 +358,7 @@ describe('app', () => {
 
       await waitFor(() => {
         // Wait for React to paint the Upload button.
-        const uploadButton = screen.getByText(/Upload a file/);
+        const uploadButton = screen.getByText(/📂 Upload a file/);
         expect(uploadButton).toBeInTheDocument();
         act(() => {
           userEvent.click(uploadButton);
@@ -393,22 +393,170 @@ describe('app', () => {
 
       // Wait for React to paint the Upload button.
       await waitFor(() => {
-        const writeAFileButton = screen.getByText(/Write a file/);
+        const writeAFileButton = screen.getByText(/📝 Write a file/);
         writeAFileButton.click();
         const textArea = screen.getByRole('textbox');
         act(() => {
           userEvent.type(textArea, fileContents);
         });
         expect(textArea).toHaveValue(fileContents);
-        const uploadContentsButton = screen.getByText(/Upload contents/);
+        const uploadContentsButton = screen.getByText(/🛫 Upload contents/);
         uploadContentsButton.click();
       });
 
       // See the explanatory comment in the upload file test case for why this
       // test is simpler than it should be.
       await waitFor(() => {
-        expect(getEndpointCalledStatuses().uploadCalled).toBeTruthy();
+        expect(getEndpointCalledStatuses().uploadEndpointCalledCount).toBe(1);
         expect(screen.getByText(`${fileContents}.txt`)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('notifies', () => {
+    // Note that we issue a variety of notifications for a variety of cases. We
+    // don't really try to test every single instance of this however, since
+    // there will be a bunch and possibly even more in the future, and the
+    // value-add of more testing code for it doesn't seem to justify the cost.
+    test('on app load', async () => {
+      render(<App />);
+
+      await waitFor(() => {
+        expect(
+          screen.getAllByText(/"number of files": 1/).length,
+        ).toBeGreaterThanOrEqual(1);
+      });
+    });
+
+    test('on /files error', async () => {
+      const expectedErrDetails = {
+        msg: 'uh oh',
+        info: uuidv4(),
+      };
+      server.use(
+        rest.get('/files', (_, res, ctx) => {
+          filesEndpointCalledCount += 1;
+          return res(ctx.status(500), ctx.json(expectedErrDetails));
+        }),
+      );
+      render(<App />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Failed to fetch files/)).toBeInTheDocument();
+        expect(
+          screen.getByText(new RegExp(`"msg": "${expectedErrDetails.msg}",`)),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText(new RegExp(`"info": "${expectedErrDetails.info}"`)),
+        ).toBeInTheDocument();
+      });
+    });
+
+    test('on /upload error for file', async () => {
+      const expectedErrDetails = {
+        msg: uuidv4(),
+        info: uuidv4(),
+      };
+      server.use(
+        rest.post('/upload', (_, res, ctx) =>
+          res(ctx.status(500), ctx.json(expectedErrDetails)),
+        ),
+      );
+      render(<App />);
+
+      await waitFor(() => {
+        // Wait for React to paint the Upload button.
+        const uploadButton = screen.getByText(/📂 Upload a file/);
+        expect(uploadButton).toBeInTheDocument();
+        act(() => {
+          userEvent.click(uploadButton);
+        });
+
+        const inputElement = screen.getByTestId('hidden-input-element');
+        const fileToUpload = new File(['hello'], 'hello.txt', {
+          type: 'text',
+        });
+        act(() => {
+          userEvent.upload(inputElement, fileToUpload);
+        });
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(new RegExp(`"msg": "${expectedErrDetails.msg}",`)),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText(new RegExp(`"info": "${expectedErrDetails.info}"`)),
+        ).toBeInTheDocument();
+      });
+    });
+
+    test('on /upload error for custom content', async () => {
+      const expectedErrDetails = {
+        msg: uuidv4(),
+        info: uuidv4(),
+      };
+      server.use(
+        rest.post('/upload', (_, res, ctx) =>
+          res(ctx.status(500), ctx.json(expectedErrDetails)),
+        ),
+      );
+      render(<App />);
+
+      const fileContents = 'hello';
+      await waitFor(() => {
+        const writeAFileButton = screen.getByText(/📝 Write a file/);
+        writeAFileButton.click();
+        const textArea = screen.getByRole('textbox');
+        act(() => {
+          userEvent.type(textArea, fileContents);
+        });
+        expect(textArea).toHaveValue(fileContents);
+        const uploadContentsButton = screen.getByText(/🛫 Upload contents/);
+        uploadContentsButton.click();
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(new RegExp(`"msg": "${expectedErrDetails.msg}",`)),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText(new RegExp(`"info": "${expectedErrDetails.info}"`)),
+        ).toBeInTheDocument();
+      });
+    });
+
+    test('on /delete error', async () => {
+      const expectedErrDetails = {
+        msg: uuidv4(),
+        info: uuidv4(),
+      };
+      // Because we do not have a database, we just use this flag to denote if the
+      // file has been deleted or not. If it has been deleted, we do not return it
+      // from /files, otherwise we do.
+      server.use(
+        rest.delete(`/delete/:fileID`, (_, res, ctx) =>
+          res(ctx.status(500), ctx.json(expectedErrDetails)),
+        ),
+      );
+
+      render(<App />);
+
+      // Wait for React to paint the Delete button.
+      await waitFor(() => {
+        const deleteButton = screen.getByText(/🗑️ Delete/);
+        expect(deleteButton).toBeInTheDocument();
+        deleteButton.click();
+      });
+
+      // Wait for React to delete the row.
+      await waitFor(() => {
+        expect(
+          screen.getByText(new RegExp(`"msg": "${expectedErrDetails.msg}",`)),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText(new RegExp(`"info": "${expectedErrDetails.info}"`)),
+        ).toBeInTheDocument();
       });
     });
   });

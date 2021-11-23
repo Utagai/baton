@@ -25,11 +25,11 @@ function uploadFileToBackend(
     // actual metadata or a document describing error.
     .then((resp) => Promise.all([resp.json(), Promise.resolve(resp.status)]))
     .then(([json, statusCode]: [any, number]) => {
-      if (statusCode === 200) {
-        addMetadataToState(json);
-        return success('filename', { filename: file.name });
+      if (statusCode !== 200) {
+        return Promise.reject(json);
       }
-      return Promise.reject(json);
+      addMetadataToState(json);
+      return success('filename', { filename: file.name });
     })
     .catch((err) => error('failed to upload', err));
 }
@@ -43,13 +43,16 @@ function getFilesFromChangeEvent(
     currentTarget: { files: fileList },
   } = event;
 
+  /* istanbul ignore next */
   if (fileList === null) {
+    error('error getting file list');
     return [];
   }
 
   const filesArray: File[] = [];
   for (let i = 0; i < fileList.length; i += 1) {
     const file = fileList.item(i);
+    /* istanbul ignore next */
     if (file === null) {
       continue;
     }
