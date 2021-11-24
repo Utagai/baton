@@ -42,6 +42,7 @@ module.exports = {
       },
     ],
     'object-curly-newline': 'off',
+    'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'operator-linebreak': [
       'error',
