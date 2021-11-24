@@ -1,6 +1,7 @@
 import React from 'react';
 
 import './index.css';
+import { BackendClient } from './BackendClient';
 import Banner from './Banner';
 import Table from './Table';
 import UploadButtons from './UploadButtons';
@@ -8,33 +9,14 @@ import CustomText from './CustomText';
 import FileMetadata from './FileMetadata';
 import { error, info } from './Notify';
 
-async function callBackendAPI(endpoint: string, method: string) {
-  const response = await fetch(endpoint, { method });
-  const body = await response.json();
-
-  if (response.status !== 200) {
-    return Promise.reject(body);
-  }
-
-  return body;
-}
-
-async function getCurrentFileMetadatas(): Promise<{ files: FileMetadata[] }> {
-  // TODO: We should not be calling /deleteexpired here because it overloads the
-  // responsibilities of this function. We should only be returning /files. The
-  // /deleteexpired should either:
-  //  * Be running in a standalone process on the box. (best option)
-  //  * Be running in the refresh thread.
-  await callBackendAPI('deleteexpired', 'DELETE');
-  return callBackendAPI('files', 'GET');
-}
-
 function tableElem(
+  backendClient: BackendClient,
   metadatas: FileMetadata[],
   setMetadatas: (newMetadatas: FileMetadata[]) => void,
 ) {
   return (
     <Table
+      backendClient={backendClient}
       metadatas={metadatas}
       deleteMetadataFromState={(metadataId: string) => {
         setMetadatas(
@@ -46,11 +28,13 @@ function tableElem(
 }
 
 function uploadButtonsElem(
+  backendClient: BackendClient,
   pushMetadatas: (newMetadata: FileMetadata) => void,
   writeAFileOnClick: () => void,
 ) {
   return (
     <UploadButtons
+      backendClient={backendClient}
       addMetadataToState={(metadata: FileMetadata) => {
         pushMetadatas(metadata);
       }}
@@ -60,11 +44,13 @@ function uploadButtonsElem(
 }
 
 function customTextElem(
+  backendClient: BackendClient,
   pushMetadatas: (newMetadata: FileMetadata) => void,
   textInputRef: React.RefObject<HTMLDivElement>,
 ) {
   return (
     <CustomText
+      backendClient={backendClient}
       textInputAreaRef={textInputRef}
       addMetadataToState={(metadata: FileMetadata) => {
         pushMetadatas(metadata);
@@ -73,17 +59,22 @@ function customTextElem(
   );
 }
 
-function onMount(setMetadatas: (metdatas: FileMetadata[]) => void) {
+function onMount(
+  backendClient: BackendClient,
+  setMetadatas: (metdatas: FileMetadata[]) => void,
+) {
   return () => {
     let mounted = true;
-    getCurrentFileMetadatas()
-      .then((resp) => {
-        if (resp !== undefined && mounted) {
-          setMetadatas(resp.files);
-          info('fetched files', { 'number of files': resp.files.length });
+    backendClient
+      .getMetadatas()
+      .then((metadatas) => {
+        if (metadatas !== undefined && mounted) {
+          setMetadatas(metadatas);
+          info('fetched files', { 'number of files': metadatas.length });
         }
       })
       .catch((err) => {
+        console.log(err);
         error('failed to fetch files', err);
       });
 
@@ -104,12 +95,21 @@ function onMount(setMetadatas: (metdatas: FileMetadata[]) => void) {
   };
 }
 
-const Baton = () => {
+const Baton = (props: { antiCSRFToken: string }) => {
   const [metadatas, setMetadatas] = React.useState<FileMetadata[]>([]);
   const textInputRef = React.useRef<HTMLDivElement>(null);
 
+  const { antiCSRFToken } = props;
+
+  console.log('inside baton component with token: ', antiCSRFToken);
+
+  const backendClient = new BackendClient(
+    'http://localhost:3000/',
+    antiCSRFToken,
+  );
+
   // useEffect with a state of [] runs only once, at mount time.
-  React.useEffect(onMount(setMetadatas), []);
+  React.useEffect(onMount(backendClient, setMetadatas), []);
 
   const writeAFileOnClick = () => {
     // Toggle the display visibility of the writing section div.
@@ -137,15 +137,20 @@ const Baton = () => {
     );
   };
 
+  // TODO: I think what I'm realizing now is that once we start passing in the
+  // backend client we are passing in an unnecessary variable. We can just pass
+  // in a function for each interactable e.g. button, that does both the state
+  // updates _and_ the backend call. Furthermore, it means state is only changed
+  // in this one file, which is probably easier to track?
   return (
     <div className="grid place-items-center">
       <Banner />
 
-      {tableElem(metadatas, setMetadatas)}
+      {tableElem(backendClient, metadatas, setMetadatas)}
 
-      {uploadButtonsElem(pushMetadata, writeAFileOnClick)}
+      {uploadButtonsElem(backendClient, pushMetadata, writeAFileOnClick)}
 
-      {customTextElem(pushMetadata, textInputRef)}
+      {customTextElem(backendClient, pushMetadata, textInputRef)}
     </div>
   );
 };

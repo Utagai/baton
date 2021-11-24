@@ -1,13 +1,15 @@
 import './index.css';
+import { BackendClient } from './BackendClient';
 import FileRows from './FileRows';
 import TableHeader from './TableHeader';
 import FileMetadata from './FileMetadata';
 
 const Table = (props: {
+  backendClient: BackendClient;
   metadatas: FileMetadata[];
   deleteMetadataFromState: (fileId: string) => void;
 }) => {
-  const { metadatas, deleteMetadataFromState } = props;
+  const { backendClient, metadatas, deleteMetadataFromState } = props;
 
   return (
     <div className="w-1/2 border-4 border-gray-200 rounded-sm mx-10">
@@ -15,6 +17,7 @@ const Table = (props: {
         <TableHeader />
 
         <FileRows
+          backendClient={backendClient}
           metadatas={metadatas}
           deleteMetadataFromState={deleteMetadataFromState}
         />

@@ -1,6 +1,7 @@
 import { format, formatDuration, intervalToDuration } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
 
+import { BackendClient } from './BackendClient';
 import Button from './Button';
 import './index.css';
 import FileMetadata from './FileMetadata';
@@ -10,36 +11,34 @@ import { error, loading, success } from './Notify';
 // testing for it.
 /* istanbul ignore next */
 function triggerDownload(id: string, filename: string) {
+  loading('triggering download', { filename });
   // This is so hacky but this seems to be the nicest way to do it...
   // window.open() seems nicer but it can trigger pop-up blockers and such (and
   // at least for my own firefox set-up, firefox initially blocks it...). This
   // gives a more seamless experience.
   // TODO: On top of this already hacky business, we are hardcoding the
   // host/port of the backend.
-  const url = `http://192.168.1.106:8080/download/${id}`;
+  const url = `http://localhost:8080/download/${id}`;
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  loading('triggering download', { filename });
 }
 
+// TODO: All this argument passing makes me wonder if a class based component is
+// better here? Maybe some research on pros/cons.
 function deleteFileOnBackend(
   fileId: string,
+  backendClient: BackendClient,
   deleteMetadataFromState: (fileId: string) => void,
 ) {
   // TODO: This is duplicated in upload as well.
-  fetch(`/delete/${fileId}`, {
-    method: 'DELETE',
-  })
-    .then((resp) => Promise.all([resp.json(), Promise.resolve(resp.status)]))
-    .then(([json, statusCode]) => {
-      if (statusCode !== 200) {
-        return Promise.reject(json);
-      }
-      deleteMetadataFromState(fileId);
+  backendClient
+    .delete(fileId)
+    .then((json) => {
+      deleteMetadataFromState(json.id);
       return success('deleted file');
     })
     .catch((err) => {
@@ -84,6 +83,7 @@ function expireTimeLeftElem(expireTime: string) {
 function fileRowButtonsElem(
   fileId: string,
   name: string,
+  backendClient: BackendClient,
   deleteFileFromState: (fileId: string) => void,
 ) {
   return (
@@ -102,7 +102,7 @@ function fileRowButtonsElem(
       <Button
         ariaLabel="Delete"
         onClick={() => {
-          deleteFileOnBackend(fileId, deleteFileFromState);
+          deleteFileOnBackend(fileId, backendClient, deleteFileFromState);
         }}
       >
         🗑️ Delete
@@ -112,10 +112,12 @@ function fileRowButtonsElem(
 }
 
 function FileRow(props: {
+  backendClient: BackendClient;
   metadata: FileMetadata;
   deleteMetadataFromState: (fileId: string) => void;
 }) {
   const {
+    backendClient,
     metadata: { id, name, size, uploadTime, expireTime },
     deleteMetadataFromState,
   } = props;
@@ -125,7 +127,7 @@ function FileRow(props: {
       {nameAndSizeElem(name, size)}
       {uploadTimeElem(uploadTime)}
       {expireTimeLeftElem(expireTime)}
-      {fileRowButtonsElem(id, name, deleteMetadataFromState)}
+      {fileRowButtonsElem(id, name, backendClient, deleteMetadataFromState)}
     </tr>
   );
 }
