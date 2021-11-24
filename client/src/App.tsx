@@ -3,29 +3,89 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import './index.css';
 import Baton from './Baton';
-import Login from './Login';
+import Loading from './Loading';
+import Login, { AuthTokens } from './Login';
+
+async function getTokens(): Promise<AuthTokens> {
+  return fetch('/getTokens', { method: 'GET' }).then((resp) => resp.json());
+}
+
+enum AuthStatus {
+  Unknown = 'UNKNOWN',
+  Authenticated = 'AUTHENTICATED',
+  Unauthenticated = 'UNAUTHENTICATED',
+}
+
+type AppState = {
+  authStatus: AuthStatus;
+  tokens: AuthTokens | undefined;
+};
 
 const App = () => {
-  // This effectively means that we are storing our session tokens in memory.
-  // Unfortunately, this means that if the user refreshes, navigates away, etc,
-  // they'll have to re-login. This usually sucks, but since we aren't planning
-  // on making this some kind of 'real' service for others to use, we're
-  // actually OK with doing this as it trades convenience for extra security.
-  const [token, setToken] = React.useState<string>();
+  const [appState, setAppState] = React.useState<AppState>({
+    authStatus: AuthStatus.Unknown,
+    tokens: undefined,
+  });
 
-  if (!token) {
-    return <Login setToken={setToken} />;
+  // TODO: We should expkain this.
+  switch (appState.authStatus) {
+    case AuthStatus.Unknown: {
+      getTokens()
+        .then((tokens) => {
+          if (!(tokens.jwtToken && tokens.antiCSRFToken)) {
+            setAppState({
+              authStatus: AuthStatus.Unauthenticated,
+              tokens,
+            });
+          } else {
+            setAppState({
+              authStatus: AuthStatus.Authenticated,
+              tokens,
+            });
+          }
+        })
+        .catch((_) => {
+          setAppState({
+            authStatus: AuthStatus.Unauthenticated,
+            tokens: undefined,
+          });
+        });
+      return <Loading />;
+    }
+    case AuthStatus.Unauthenticated: {
+      return (
+        <Login
+          // TODO: May want to unpack tokens...
+          antiCSRFToken={appState.tokens!.antiCSRFToken}
+          setToken={(token_: AuthTokens) => {
+            setAppState({
+              authStatus: AuthStatus.Authenticated,
+              tokens: token_,
+            });
+          }}
+        />
+      );
+    }
+    case AuthStatus.Authenticated: {
+      return (
+        <div className="wrapper">
+          <BrowserRouter>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <Baton antiCSRFToken={appState.tokens!.antiCSRFToken} />
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </div>
+      );
+    }
+    default: {
+      throw Error('unreachable app state');
+    }
   }
-
-  return (
-    <div className="wrapper">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Baton />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
-  );
 };
 
 export default App;

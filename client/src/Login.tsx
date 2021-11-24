@@ -4,13 +4,19 @@ import './index.css';
 import { success, error } from './Notify';
 
 type UserCredentials = { username: string; password: string };
-async function login(creds: UserCredentials): Promise<string> {
-  console.log('sending creds: ', JSON.stringify(creds));
+export type AuthTokens = { jwtToken: string; antiCSRFToken: string };
+
+async function login(
+  antiCSRFToken: string,
+  creds: UserCredentials,
+): Promise<AuthTokens> {
   return fetch('/login', {
     method: 'POST',
+    credentials: 'same-origin',
     headers: {
       Accept: 'application/json, text/plain, */*',
       'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': antiCSRFToken,
     },
     body: JSON.stringify(creds),
   })
@@ -19,24 +25,30 @@ async function login(creds: UserCredentials): Promise<string> {
       if (statusCode !== 200) {
         return Promise.reject(json);
       }
-      return Promise.resolve(json.token);
+      return Promise.resolve(json);
     });
 }
 
-function Login(props: { setToken: (token: string) => void }) {
-  const { setToken } = props;
+function Login(props: {
+  antiCSRFToken: string;
+  setToken: (token: AuthTokens) => void;
+}) {
+  const { antiCSRFToken, setToken } = props;
 
   const [username, setUsername] = React.useState<string>('');
   const [password, setPassword] = React.useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login({
+    login(antiCSRFToken, {
       username,
       password,
     })
       .then((token) => {
+        console.log('setting the token: ', token);
         setToken(token);
+        // I think it looks better as 'user'. Could probably just do { username }
+        // too.
         success('logged in successfully', { user: username });
       })
       .catch((err) => {
