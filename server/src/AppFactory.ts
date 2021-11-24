@@ -34,6 +34,7 @@ function AppFactory(
   app.use(cookieParser());
 
   // Middleware for logging each request that comes in.
+  // TODO: The middleware here and throughout should be factored out.
   app.use(
     (
       req: express.Request,
@@ -74,13 +75,18 @@ function AppFactory(
     res: express.Response,
     next: express.NextFunction,
   ) => {
-    jwt.verify(req.cookies.cookieToken, process.env.JWT_SECRET, (err, _) => {
-      if (err) {
-        res.redirect('/');
-      } else {
-        next();
-      }
-    });
+    jwt.verify(
+      req.cookies.token,
+      process.env.JWT_SECRET,
+      (err: Error, _: any) => {
+        if (err) {
+          console.log('err: ', err);
+          res.redirect('/');
+        } else {
+          next();
+        }
+      },
+    );
   };
 
   // sendErr is a tiny helper for returning JSON errors from the express endpoints.
@@ -93,7 +99,7 @@ function AppFactory(
   };
 
   // /files returns a listing of all the files, _including_ expired files.
-  app.get('/files', csrfProtection, mustBeLoggedIn, (_, res) => {
+  app.get('/files', csrfProtection, mustBeLoggedIn, (req, res) => {
     const files = filesDB.getAllFiles();
     res.send({
       files,
@@ -103,7 +109,7 @@ function AppFactory(
   // /upload uploads the specified file contents. Metadata about the file is
   // created at this time as well, making the file available for listing/download
   // once this endpoint returns.
-  app.post('/upload', (req, res) => {
+  app.post('/upload', csrfProtection, mustBeLoggedIn, (req, res) => {
     const { body: uploadRequest } = req;
     if (!uploadRequest.name || !uploadRequest.id || !uploadRequest.size) {
       sendErr(
@@ -120,6 +126,8 @@ function AppFactory(
       uploadTime: new Date(),
       expireTime: addDays(new Date(), fileLifetimeInDays),
     };
+
+    // sendErr(res, 'uh oh', { info: 'hello world' });
 
     const fileData = req.files?.file;
     // Check if this is one or multiple files.
@@ -149,7 +157,7 @@ function AppFactory(
   // /delete/:id deletes the file specified by :id. This does not delete the file
   // on disk.
   // TODO: This _should_ delete the file on disk.
-  app.delete('/delete/:id', (req, res) => {
+  app.delete('/delete/:id', csrfProtection, mustBeLoggedIn, (req, res) => {
     const {
       params: { id },
     } = req;
@@ -166,14 +174,14 @@ function AppFactory(
   // deleted on disk.
   // TODO: Deletion of expired data should actually happen in the background of
   // this server or some separate process.
-  app.delete('/deleteexpired', (_req, res) => {
+  app.delete('/deleteexpired', csrfProtection, mustBeLoggedIn, (_req, res) => {
     filesDB.deleteExpiredFiles();
     res.send({});
   });
 
   // /download/:id returns the file specified by :id as a downloadable file. This
   // should trigger a download in the user's browser.
-  app.get('/download/:id', (req, res) => {
+  app.get('/download/:id', csrfProtection, mustBeLoggedIn, (req, res) => {
     const {
       params: { id },
     } = req;
@@ -199,7 +207,7 @@ function AppFactory(
 
   // /download/:id returns the file specified by :id as a downloadable file. This
   // should trigger a download in the user's browser.
-  app.post('/login', (req, res) => {
+  app.post('/login', csrfProtection, (req, res) => {
     const {
       body: { username, password: plaintextPassword },
     } = req;
@@ -210,8 +218,11 @@ function AppFactory(
       user !== undefined &&
       passwordMatchesHash(plaintextPassword, user.passwordHashInfo)
     ) {
+      const jwtToken = jwt.sign({ username }, process.env.JWT_SECRET);
+      res.cookie('token', jwtToken, { httpOnly: true });
       return res.send({
-        token: jwt.sign({ username }, process.env.JWT_SECRET),
+        jwtToken,
+        antiCSRFToken: req.csrfToken(),
       });
     }
 
@@ -219,13 +230,27 @@ function AppFactory(
     return res.send({ err: 'failed authentication' });
   });
 
+  app.get('/getTokens', csrfProtection, (req, res) => {
+    // TODO: Although anti-CSRF token would have been a better name, it is now
+    // convention that the name is simply CSRF token. We should stick with
+    // convention. This applies to backend + frontend code.
+    return res.send({
+      jwtToken: req.cookies.token,
+      antiCSRFToken: req.csrfToken(),
+    });
+  });
+
   app.use(
     (
       err: Error,
-      _: express.Request,
+      req: express.Request,
       __: express.Response,
       next: express.NextFunction,
     ) => {
+      console.log('err: ', err.name);
+      // if (err.name === 'ForbiddenError') {
+      //   console.log('yo req csrf: ', req.csrfToken());
+      // }
       // I don't know why logger.error(err) does not do the trick :(.
       // It only shows the error code. I seem to have to get it in this format
       // for it to print out everything and do so nicely.
