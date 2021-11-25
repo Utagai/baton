@@ -26,11 +26,6 @@ export class BackendClient {
     method: string,
     body?: any,
   ): Promise<BackendResponse<T>> {
-    console.log(
-      new URL(endpoint, this.host).href,
-      'returning fetch with csrf token: ',
-      this.antiCSRFToken,
-    );
     return (
       fetch(new URL(endpoint, this.host).href, {
         method,
@@ -46,14 +41,11 @@ export class BackendClient {
         // the JSON body + status code, so that when we handle the JSON body, we have
         // the context of the response's status code to determine if the JSON body is
         // actual metadata or a document describing error.
-        .then((resp) => {
-          console.log('issued request to ', new URL(endpoint, this.host).href);
-          console.log('resp: ', resp!.body);
-          return Promise.all([resp.json(), Promise.resolve(resp.status)]);
-        })
+        .then((resp) =>
+          Promise.all([resp.json(), Promise.resolve(resp.status)]),
+        )
         .then(([json, statusCode]: [any, number]) => {
           if (statusCode !== 200) {
-            console.log('rejecting it: ', JSON.stringify(json));
             return Promise.reject(new BackendError(json, statusCode));
           }
           return Promise.resolve({ json, statusCode });
