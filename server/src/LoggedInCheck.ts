@@ -13,7 +13,7 @@ export default function loggedInCheck(
     process.env.JWT_SECRET,
     (err: Error, _: any) => {
       if (err) {
-        res.status(403).send({ msg: 'failed to authenticate' });
+        res.status(403).send({ msg: 'not authenticated' });
       } else {
         next();
       }

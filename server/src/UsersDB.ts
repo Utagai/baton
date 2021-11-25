@@ -16,7 +16,6 @@ export class SQLiteUsersDB extends SQLiteDB implements UsersDB {
   }
 
   getUser(username: string): User | undefined {
-    console.log(`looking for '${username}' in table '${this.tableName}'`);
     const selectStmt = this.db.prepare(
       `SELECT * FROM ${this.tableName} WHERE username = @username`,
     );
