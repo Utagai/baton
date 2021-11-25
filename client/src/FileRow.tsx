@@ -2,6 +2,7 @@ import { format, formatDuration, intervalToDuration } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
 
 import { BackendClient } from './BackendClient';
+import BackendError from './BackendError';
 import Button from './Button';
 import './index.css';
 import FileMetadata from './FileMetadata';
@@ -37,11 +38,11 @@ function deleteFileOnBackend(
   // TODO: This is duplicated in upload as well.
   backendClient
     .delete(fileId)
-    .then((json) => {
-      deleteMetadataFromState(json.id);
+    .then((resp) => {
+      deleteMetadataFromState(resp.json.id);
       return success('deleted file');
     })
-    .catch((err) => {
+    .catch((err: BackendError) => {
       error('error from /delete call', err);
     });
 }

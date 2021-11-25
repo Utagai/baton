@@ -1,3 +1,4 @@
+import BackendError from './BackendError';
 import FileMetadata from './FileMetadata';
 
 // TODO for when we are back:
@@ -5,8 +6,8 @@ import FileMetadata from './FileMetadata';
 // * How is CSURF doing things such that it accomplishes the requirements of
 // bullet 1?
 
-export type BackendResponse = {
-  jsonResponse: any;
+export type BackendResponse<T> = {
+  json: T;
   statusCode: number;
 };
 
@@ -20,11 +21,11 @@ export class BackendClient {
     this.antiCSRFToken = antiCSRFToken;
   }
 
-  async wrappedFetch(
+  async wrappedFetch<T>(
     endpoint: string,
     method: string,
     body?: any,
-  ): Promise<BackendResponse> {
+  ): Promise<BackendResponse<T>> {
     console.log(
       new URL(endpoint, this.host).href,
       'returning fetch with csrf token: ',
@@ -50,34 +51,29 @@ export class BackendClient {
           console.log('resp: ', resp!.body);
           return Promise.all([resp.json(), Promise.resolve(resp.status)]);
         })
-        .then(([jsonResponse, statusCode]: [any, number]) => {
+        .then(([json, statusCode]: [any, number]) => {
           if (statusCode !== 200) {
-            return Promise.reject(new Error(jsonResponse.toString()));
+            console.log('rejecting it: ', JSON.stringify(json));
+            return Promise.reject(new BackendError(json, statusCode));
           }
-          return Promise.resolve({ jsonResponse, statusCode });
+          return Promise.resolve({ json, statusCode });
         })
     );
   }
 
-  async getMetadatas(): Promise<FileMetadata[]> {
-    return this.wrappedFetch('/files', 'GET').then(
-      (resp) => resp.jsonResponse.files,
-    );
+  async getMetadatas(): Promise<BackendResponse<{ files: FileMetadata[] }>> {
+    return this.wrappedFetch('/files', 'GET');
   }
 
-  async upload(data: FormData): Promise<FileMetadata> {
-    return this.wrappedFetch('/upload', 'POST', data).then(
-      (resp) => resp.jsonResponse,
-    );
+  async upload(data: FormData): Promise<BackendResponse<FileMetadata>> {
+    return this.wrappedFetch('/upload', 'POST', data);
   }
 
-  async delete(id: string): Promise<{ id: string }> {
-    return this.wrappedFetch(`/delete/${id}`, 'DELETE').then(
-      (resp) => resp.jsonResponse,
-    );
+  async delete(id: string): Promise<BackendResponse<{ id: string }>> {
+    return this.wrappedFetch(`/delete/${id}`, 'DELETE');
   }
 
-  async deleteExpired(): Promise<BackendResponse> {
+  async deleteExpired(): Promise<BackendResponse<{}>> {
     return this.wrappedFetch('/deleteexpired', 'DELETE');
   }
 }

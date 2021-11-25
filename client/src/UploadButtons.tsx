@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import './index.css';
+import BackendError from './BackendError';
 import { BackendClient } from './BackendClient';
 import FileMetadata from './FileMetadata';
 import Button from './Button';
@@ -23,11 +24,11 @@ function uploadFileToBackend(
     // the JSON body + status code, so that when we handle the JSON body, we have
     // the context of the response's status code to determine if the JSON body is
     // actual metadata or a document describing error.
-    .then((json) => {
-      addMetadataToState(json);
+    .then((resp) => {
+      addMetadataToState(resp.json);
       return success('filename', { filename: file.name });
     })
-    .catch((err) => error('failed to upload', err));
+    .catch((err: BackendError) => error('failed to upload', err));
 }
 
 // This function is just useful because it gets rid of FileList | null

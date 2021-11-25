@@ -1,6 +1,7 @@
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
+import BackendError from './BackendError';
 import { BackendClient } from './BackendClient';
 import FileMetadata from './FileMetadata';
 import Button from './Button';
@@ -35,11 +36,11 @@ function uploadContentToBackend(
     // the context of the response's status code to determine if the JSON body is
     // actual metadata or a document describing error.
     // TODO: De-dupe this upload logic.
-    .then((json) => {
-      addMetadataToState(json);
+    .then((resp) => {
+      addMetadataToState(resp.json);
       return success('uploaded custom text', { filename: customFilename });
     })
-    .catch((err) => error('failed to upload', err));
+    .catch((err: BackendError) => error('failed to upload', err));
 }
 
 function textAreaElem(setTextAreaText: (text: string) => void) {

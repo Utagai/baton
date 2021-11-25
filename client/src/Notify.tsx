@@ -7,6 +7,8 @@
 import React from 'react';
 import cogoToast, { CTOptions } from 'cogo-toast';
 
+import BackendError from './BackendError';
+
 const position = 'bottom-center';
 const hideAfter = 5;
 
@@ -25,9 +27,14 @@ function sendNotification(
 ) {
   let detailElems = <></>;
   if (details) {
+    const detailText =
+      details instanceof BackendError
+        ? JSON.stringify(details.json(), null, 2)
+        : JSON.stringify(details, null, 2);
+
     detailElems = (
       <pre className="italic">
-        <code>{JSON.stringify(details, null, 2)}</code>
+        <code>{detailText}</code>
       </pre>
     );
   }

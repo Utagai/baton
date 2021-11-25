@@ -1,6 +1,7 @@
 import React from 'react';
 
 import './index.css';
+import BackendError from './BackendError';
 import { BackendClient } from './BackendClient';
 import Banner from './Banner';
 import Table from './Table';
@@ -61,20 +62,21 @@ function customTextElem(
 
 function onMount(
   backendClient: BackendClient,
-  setMetadatas: (metdatas: FileMetadata[]) => void,
+  setMetadatas: (metadatas: FileMetadata[]) => void,
 ) {
   return () => {
     let mounted = true;
     backendClient
       .getMetadatas()
-      .then((metadatas) => {
-        if (metadatas !== undefined && mounted) {
-          setMetadatas(metadatas);
-          info('fetched files', { 'number of files': metadatas.length });
+      .then((resp) => {
+        if (mounted) {
+          setMetadatas(resp.json.files);
+          info('fetched files', {
+            'number of files': resp.json.files.length,
+          });
         }
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((err: BackendError) => {
         error('failed to fetch files', err);
       });
 
