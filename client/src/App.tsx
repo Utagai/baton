@@ -74,7 +74,10 @@ const App = () => {
               <Route
                 path="/"
                 element={
-                  <Baton antiCSRFToken={appState.tokens!.antiCSRFToken} />
+                  <Baton
+                    host="http://localhost:3000"
+                    antiCSRFToken={appState.tokens!.antiCSRFToken}
+                  />
                 }
               />
             </Routes>

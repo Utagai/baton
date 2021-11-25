@@ -95,18 +95,13 @@ function onMount(
   };
 }
 
-const Baton = (props: { antiCSRFToken: string }) => {
+const Baton = (props: { host: string; antiCSRFToken: string }) => {
   const [metadatas, setMetadatas] = React.useState<FileMetadata[]>([]);
   const textInputRef = React.useRef<HTMLDivElement>(null);
 
-  const { antiCSRFToken } = props;
+  const { host, antiCSRFToken } = props;
 
-  console.log('inside baton component with token: ', antiCSRFToken);
-
-  const backendClient = new BackendClient(
-    'http://localhost:3000/',
-    antiCSRFToken,
-  );
+  const backendClient = new BackendClient(host, antiCSRFToken);
 
   // useEffect with a state of [] runs only once, at mount time.
   React.useEffect(onMount(backendClient, setMetadatas), []);

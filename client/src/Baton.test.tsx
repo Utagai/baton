@@ -5,7 +5,7 @@ import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { v4 as uuidv4 } from 'uuid';
 import userEvent from '@testing-library/user-event';
 
-import App from './App';
+import Baton from './Baton';
 
 // So this is tragic and I'm doing this because I just genuinely don't know how
 // else to do this in a way that does not involve a janky (and flaky) sleep
@@ -75,7 +75,7 @@ afterAll(() => server.close());
 
 describe('app', () => {
   test('renders title', () => {
-    render(<App />);
+    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
     const titleElement = screen.getByText(/baton/i);
     expect(titleElement).toBeInTheDocument();
   });
@@ -84,31 +84,31 @@ describe('app', () => {
   // 'baton' text because it would have trouble rendering if we tried italicizing
   // it.
   test('renders baton emoji', () => {
-    render(<App />);
+    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
     const titleElement = screen.getByText(/🪄/i);
     expect(titleElement).toBeInTheDocument();
   });
 
   test('renders table', () => {
-    render(<App />);
+    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
     const tableElement = screen.getByRole('table');
     expect(tableElement).toBeInTheDocument();
   });
 
   test('renders write-a-file button', () => {
-    render(<App />);
+    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
     const writeAFileButton = screen.getByText(/Write a file/);
     expect(writeAFileButton).toBeInTheDocument();
   });
 
   test('renders upload-a-file button', () => {
-    render(<App />);
+    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
     const uploadAFileButton = screen.getByText(/Upload a file/);
     expect(uploadAFileButton).toBeInTheDocument();
   });
 
   test('toggles text entry UI when write-a-file is clicked', () => {
-    render(<App />);
+    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
 
     const textArea = screen.getByRole('textbox');
     expect(textArea).toBeInTheDocument();
@@ -171,7 +171,7 @@ describe('app', () => {
       }),
     );
 
-    render(<App />);
+    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
 
     // Wait for React to paint the data in the rows.
     await waitFor(() => {
@@ -223,7 +223,7 @@ describe('app', () => {
       }),
     );
 
-    render(<App />);
+    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
 
     // Wait for React to paint the Delete button.
     await waitFor(() => {
@@ -283,7 +283,7 @@ describe('app', () => {
       const fileContents = 'text';
 
       server.use(
-        rest.get('/files', (_, res, ctx) => {
+        rest.get('http://localhost/files', (_, res, ctx) => {
           filesEndpointCalledCount += 1;
           filesCalled = true;
           return res(
@@ -298,7 +298,7 @@ describe('app', () => {
             }),
           );
         }),
-        rest.post('/upload', (_, res, ctx) => {
+        rest.post('http://localhost/upload', (_, res, ctx) => {
           uploadEndpointCalledCount += 1;
           return res(
             ctx.json({
@@ -319,7 +319,7 @@ describe('app', () => {
       const getEndpointCalledStatuses = startServer();
       const fileContents = 'text';
 
-      render(<App />);
+      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
 
       await waitFor(() => {
         expect(getEndpointCalledStatuses().filesCalled).toBeTruthy();
@@ -350,7 +350,7 @@ describe('app', () => {
       const getEndpointCalledStatuses = startServer();
       const fileContents = 'text';
 
-      render(<App />);
+      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
 
       await waitFor(() => {
         expect(getEndpointCalledStatuses().filesCalled).toBeTruthy();
@@ -385,7 +385,7 @@ describe('app', () => {
     test('custom content', async () => {
       const getEndpointCalledStatuses = startServer();
       const fileContents = 'text';
-      render(<App />);
+      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
 
       await waitFor(() => {
         expect(getEndpointCalledStatuses().filesCalled).toBeTruthy();
@@ -419,7 +419,7 @@ describe('app', () => {
     // there will be a bunch and possibly even more in the future, and the
     // value-add of more testing code for it doesn't seem to justify the cost.
     test('on app load', async () => {
-      render(<App />);
+      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
 
       await waitFor(() => {
         expect(
@@ -439,7 +439,7 @@ describe('app', () => {
           return res(ctx.status(500), ctx.json(expectedErrDetails));
         }),
       );
-      render(<App />);
+      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
 
       await waitFor(() => {
         expect(screen.getByText(/Failed to fetch files/)).toBeInTheDocument();
@@ -462,7 +462,7 @@ describe('app', () => {
           res(ctx.status(500), ctx.json(expectedErrDetails)),
         ),
       );
-      render(<App />);
+      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
 
       await waitFor(() => {
         // Wait for React to paint the Upload button.
@@ -501,7 +501,7 @@ describe('app', () => {
           res(ctx.status(500), ctx.json(expectedErrDetails)),
         ),
       );
-      render(<App />);
+      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
 
       const fileContents = 'hello';
       await waitFor(() => {
@@ -540,7 +540,7 @@ describe('app', () => {
         ),
       );
 
-      render(<App />);
+      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
 
       // Wait for React to paint the Delete button.
       await waitFor(() => {
