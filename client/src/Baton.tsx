@@ -97,13 +97,13 @@ function onMount(
   };
 }
 
-const Baton = (props: { host: string; antiCSRFToken: string }) => {
+const Baton = (props: { host: string }) => {
   const [metadatas, setMetadatas] = React.useState<FileMetadata[]>([]);
   const textInputRef = React.useRef<HTMLDivElement>(null);
 
-  const { host, antiCSRFToken } = props;
+  const { host } = props;
 
-  const backendClient = new BackendClient(host, antiCSRFToken);
+  const backendClient = new BackendClient(host);
 
   // useEffect with a state of [] runs only once, at mount time.
   React.useEffect(onMount(backendClient, setMetadatas), []);

@@ -4,19 +4,15 @@ import './index.css';
 import { success, error } from './Notify';
 
 type UserCredentials = { username: string; password: string };
-export type AuthTokens = { jwtToken: string; antiCSRFToken: string };
 
-async function login(
-  antiCSRFToken: string,
-  creds: UserCredentials,
-): Promise<AuthTokens> {
+// TODO: Use backendclient here?
+async function login(creds: UserCredentials): Promise<any> {
   return fetch('/login', {
     method: 'POST',
     credentials: 'same-origin',
     headers: {
       Accept: 'application/json, text/plain, */*',
       'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': antiCSRFToken,
     },
     body: JSON.stringify(creds),
   })
@@ -29,26 +25,22 @@ async function login(
     });
 }
 
-function Login(props: {
-  antiCSRFToken: string;
-  setToken: (token: AuthTokens) => void;
-}) {
-  const { antiCSRFToken, setToken } = props;
-
+function Login(props: { onSuccessfulLogin: () => void }) {
   const [username, setUsername] = React.useState<string>('');
   const [password, setPassword] = React.useState<string>('');
 
+  const { onSuccessfulLogin } = props;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(antiCSRFToken, {
+    login({
       username,
       password,
     })
-      .then((token) => {
-        console.log('setting the token: ', token);
-        setToken(token);
+      .then(() => {
         // I think it looks better as 'user'. Could probably just do { username }
         // too.
+        onSuccessfulLogin();
         success('logged in successfully', { user: username });
       })
       .catch((err) => {

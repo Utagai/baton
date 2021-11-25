@@ -14,11 +14,8 @@ export type BackendResponse<T> = {
 export class BackendClient {
   host: string;
 
-  antiCSRFToken: string;
-
-  constructor(host: string, antiCSRFToken: string) {
+  constructor(host: string) {
     this.host = host;
-    this.antiCSRFToken = antiCSRFToken;
   }
 
   async wrappedFetch<T>(
@@ -30,11 +27,8 @@ export class BackendClient {
       fetch(new URL(endpoint, this.host).href, {
         method,
         credentials: 'same-origin',
-        headers: {
-          // TODO: Does setting the right content-type here, e.g., Form, help
-          // with jest tests?
-          'X-CSRF-TOKEN': this.antiCSRFToken,
-        },
+        // TODO: Does setting the right content-type here, e.g., Form, help
+        // with jest tests?
         body,
       })
         // A little bit of cleverness. We return a single promise that is a tuple of

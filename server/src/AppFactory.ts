@@ -6,7 +6,6 @@ import process from 'process';
 import pino from 'pino';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
-import csurf from 'csurf';
 
 import { UsersDB } from './UsersDB';
 import { FilesDB } from './FilesDB';
@@ -26,8 +25,6 @@ function AppFactory(
   fileLifetimeInDays: number,
 ): express.Express {
   const app = express();
-  // TODO: We should also add 'secure' here for production.
-  const csrfProtection = csurf({ cookie: { httpOnly: true } });
 
   app.use(express.json());
   app.use(fileUpload());
@@ -98,7 +95,7 @@ function AppFactory(
   };
 
   // /files returns a listing of all the files, _including_ expired files.
-  app.get('/files', csrfProtection, mustBeLoggedIn, (req, res) => {
+  app.get('/files', mustBeLoggedIn, (_, res) => {
     const files = filesDB.getAllFiles();
     res.send({
       files,
@@ -108,7 +105,7 @@ function AppFactory(
   // /upload uploads the specified file contents. Metadata about the file is
   // created at this time as well, making the file available for listing/download
   // once this endpoint returns.
-  app.post('/upload', csrfProtection, mustBeLoggedIn, (req, res) => {
+  app.post('/upload', mustBeLoggedIn, (req, res) => {
     const { body: uploadRequest } = req;
     if (!uploadRequest.name || !uploadRequest.id || !uploadRequest.size) {
       sendErr(
@@ -156,7 +153,7 @@ function AppFactory(
   // /delete/:id deletes the file specified by :id. This does not delete the file
   // on disk.
   // TODO: This _should_ delete the file on disk.
-  app.delete('/delete/:id', csrfProtection, mustBeLoggedIn, (req, res) => {
+  app.delete('/delete/:id', mustBeLoggedIn, (req, res) => {
     const {
       params: { id },
     } = req;
@@ -173,14 +170,14 @@ function AppFactory(
   // deleted on disk.
   // TODO: Deletion of expired data should actually happen in the background of
   // this server or some separate process.
-  app.delete('/deleteexpired', csrfProtection, mustBeLoggedIn, (_req, res) => {
+  app.delete('/deleteexpired', mustBeLoggedIn, (_req, res) => {
     filesDB.deleteExpiredFiles();
     res.send({});
   });
 
   // /download/:id returns the file specified by :id as a downloadable file. This
   // should trigger a download in the user's browser.
-  app.get('/download/:id', csrfProtection, mustBeLoggedIn, (req, res) => {
+  app.get('/download/:id', mustBeLoggedIn, (req, res) => {
     const {
       params: { id },
     } = req;
@@ -206,7 +203,7 @@ function AppFactory(
 
   // /download/:id returns the file specified by :id as a downloadable file. This
   // should trigger a download in the user's browser.
-  app.post('/login', csrfProtection, (req, res) => {
+  app.post('/login', (req, res) => {
     const {
       body: { username, password: plaintextPassword },
     } = req;
@@ -219,30 +216,23 @@ function AppFactory(
     ) {
       const jwtToken = jwt.sign({ username }, process.env.JWT_SECRET);
       res.cookie('token', jwtToken, { httpOnly: true });
-      return res.send({
-        jwtToken,
-        antiCSRFToken: req.csrfToken(),
-      });
+      return res.send({});
     }
 
     res.status(401);
     return res.send({ err: 'failed authentication' });
   });
 
-  app.get('/getTokens', csrfProtection, (req, res) => {
-    // TODO: Although anti-CSRF token would have been a better name, it is now
-    // convention that the name is simply CSRF token. We should stick with
-    // convention. This applies to backend + frontend code.
-    return res.send({
-      jwtToken: req.cookies.token,
-      antiCSRFToken: req.csrfToken(),
-    });
+  app.get('/isLoggedIn', mustBeLoggedIn, (_, res) => {
+    // Due to our login-checking middleware, this code will only ever be
+    // executed if the user is already logged in, so simply return 200.
+    res.sendStatus(200);
   });
 
   app.use(
     (
       err: Error,
-      req: express.Request,
+      _: express.Request,
       __: express.Response,
       next: express.NextFunction,
     ) => {

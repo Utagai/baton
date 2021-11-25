@@ -35,7 +35,7 @@ afterAll(() => server.close());
 
 describe('app', () => {
   test('renders title', () => {
-    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+    render(<Baton host="http://localhost/" />);
     const titleElement = screen.getByText(/baton/i);
     expect(titleElement).toBeInTheDocument();
   });
@@ -44,31 +44,31 @@ describe('app', () => {
   // 'baton' text because it would have trouble rendering if we tried italicizing
   // it.
   test('renders baton emoji', () => {
-    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+    render(<Baton host="http://localhost/" />);
     const titleElement = screen.getByText(/🪄/i);
     expect(titleElement).toBeInTheDocument();
   });
 
   test('renders table', () => {
-    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+    render(<Baton host="http://localhost/" />);
     const tableElement = screen.getByRole('table');
     expect(tableElement).toBeInTheDocument();
   });
 
   test('renders write-a-file button', () => {
-    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+    render(<Baton host="http://localhost/" />);
     const writeAFileButton = screen.getByText(/Write a file/);
     expect(writeAFileButton).toBeInTheDocument();
   });
 
   test('renders upload-a-file button', () => {
-    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+    render(<Baton host="http://localhost/" />);
     const uploadAFileButton = screen.getByText(/Upload a file/);
     expect(uploadAFileButton).toBeInTheDocument();
   });
 
   test('toggles text entry UI when write-a-file is clicked', () => {
-    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+    render(<Baton host="http://localhost/" />);
 
     const textArea = screen.getByRole('textbox');
     expect(textArea).toBeInTheDocument();
@@ -128,7 +128,7 @@ describe('app', () => {
       rest.get('/files', (_, res, ctx) => res(ctx.json(filesEndpointMock()))),
     );
 
-    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+    render(<Baton host="http://localhost/" />);
 
     // Wait for React to paint the data in the rows.
     await waitFor(() => {
@@ -179,7 +179,7 @@ describe('app', () => {
       }),
     );
 
-    render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+    render(<Baton host="http://localhost/" />);
 
     // Wait for React to paint the Delete button.
     await waitFor(() => {
@@ -274,7 +274,7 @@ describe('app', () => {
       const getEndpointCalledStatuses = startServer();
       const fileContents = 'text';
 
-      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+      render(<Baton host="http://localhost/" />);
 
       await waitFor(() => {
         expect(getEndpointCalledStatuses().filesCalled).toBeTruthy();
@@ -305,7 +305,7 @@ describe('app', () => {
       const getEndpointCalledStatuses = startServer();
       const fileContents = 'text';
 
-      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+      render(<Baton host="http://localhost/" />);
 
       await waitFor(() => {
         expect(getEndpointCalledStatuses().filesCalled).toBeTruthy();
@@ -340,7 +340,7 @@ describe('app', () => {
     test('custom content', async () => {
       const getEndpointCalledStatuses = startServer();
       const fileContents = 'text';
-      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+      render(<Baton host="http://localhost/" />);
 
       await waitFor(() => {
         expect(getEndpointCalledStatuses().filesCalled).toBeTruthy();
@@ -374,7 +374,7 @@ describe('app', () => {
     // there will be a bunch and possibly even more in the future, and the
     // value-add of more testing code for it doesn't seem to justify the cost.
     test('on app load', async () => {
-      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+      render(<Baton host="http://localhost/" />);
 
       await waitFor(() => {
         expect(
@@ -393,7 +393,7 @@ describe('app', () => {
           res(ctx.status(500), ctx.json(expectedErrDetails)),
         ),
       );
-      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+      render(<Baton host="http://localhost/" />);
 
       await waitFor(() => {
         expect(screen.getByText(/Failed to fetch files/)).toBeInTheDocument();
@@ -416,7 +416,7 @@ describe('app', () => {
           res(ctx.status(500), ctx.json(expectedErrDetails)),
         ),
       );
-      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+      render(<Baton host="http://localhost/" />);
 
       await waitFor(() => {
         // Wait for React to paint the Upload button.
@@ -455,7 +455,7 @@ describe('app', () => {
           res(ctx.status(500), ctx.json(expectedErrDetails)),
         ),
       );
-      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+      render(<Baton host="http://localhost/" />);
 
       const fileContents = 'hello';
       await waitFor(() => {
@@ -494,7 +494,7 @@ describe('app', () => {
         ),
       );
 
-      render(<Baton host="http://localhost/" antiCSRFToken="foo" />);
+      render(<Baton host="http://localhost/" />);
 
       // Wait for React to paint the Delete button.
       await waitFor(() => {
