@@ -6,57 +6,23 @@ import { addDays } from 'date-fns';
 import dotenv from 'dotenv';
 
 import FileMetadata from './FileMetadata';
-import { SQLiteUsersDB } from './UsersDB';
-import { SQLiteFilesDB } from './FilesDB';
 import AppFactory from './AppFactory';
-import { createPasswordHashInfo } from './Password';
-
-const testLogLevel = 'debug';
-const testSQLiteDBFile = './sqlite/baton_test.db';
-const testUploadPath = './uploaded-test/';
-const testDefaultFileLifetime = 1;
+import {
+  testLogLevel,
+  testUploadPath,
+  testDefaultFileLifetime,
+  getTestTableName,
+  getTestFilesDB,
+  getTestUsersDB,
+  getTestApp,
+  testUsername,
+  testPlaintextPassword,
+  addTestUserToDB,
+} from './TestHelpers';
 
 jest.mock('./LoggedInCheck');
 
 dotenv.config();
-
-function getTestTableName(prefix: string, currentTestName: string) {
-  return `${prefix}_${currentTestName.replace(/ /g, '_')}`;
-}
-
-function getTestUsersDB(currentTestName: string) {
-  const testTableName = getTestTableName('users', currentTestName);
-  return new SQLiteUsersDB(testSQLiteDBFile, testTableName);
-}
-
-function getTestFilesDB(currentTestName: string) {
-  const testTableName = getTestTableName('files', currentTestName);
-  return new SQLiteFilesDB(testSQLiteDBFile, testTableName);
-}
-
-function getTestApp(currentTestName: string) {
-  // Make the logs pretty to make debugging test failures easier.
-  const logger = pino({
-    level: testLogLevel,
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-      },
-    },
-  });
-  const usersDB = getTestUsersDB(currentTestName);
-  const filesDB = getTestFilesDB(currentTestName);
-  const fileUploadPath = testUploadPath;
-  const defaultFileLifetimeInDays = testDefaultFileLifetime;
-  return AppFactory(
-    logger,
-    usersDB,
-    filesDB,
-    fileUploadPath,
-    defaultFileLifetimeInDays,
-  );
-}
 
 // Run the clean-up _before_ the tests run, so that on failure, we still have
 // the leftover data in SQLite + disk for debugging purposes.
@@ -381,16 +347,7 @@ describe('download', () => {
 describe('login', () => {
   test('successful login', async () => {
     const { currentTestName } = expect.getState();
-    const usersDB = getTestUsersDB(currentTestName);
-    const testUsername = 'test';
-    const testPlaintextPassword = 'helloworld';
-    const testPasswordHashInfo = createPasswordHashInfo(testPlaintextPassword);
-    expect(
-      usersDB.addUser({
-        username: testUsername,
-        passwordHashInfo: testPasswordHashInfo,
-      }),
-    ).toBe(1);
+    addTestUserToDB(currentTestName);
 
     const app = getTestApp(currentTestName);
     await request(app)
@@ -402,16 +359,7 @@ describe('login', () => {
 
   test('invalid login due to bad credentials', async () => {
     const { currentTestName } = expect.getState();
-    const usersDB = getTestUsersDB(currentTestName);
-    const testUsername = 'test';
-    const testPlaintextPassword = 'helloworld';
-    const testPasswordHashInfo = createPasswordHashInfo(testPlaintextPassword);
-    expect(
-      usersDB.addUser({
-        username: testUsername,
-        passwordHashInfo: testPasswordHashInfo,
-      }),
-    ).toBe(1);
+    addTestUserToDB(currentTestName);
 
     const app = getTestApp(currentTestName);
     await request(app)
