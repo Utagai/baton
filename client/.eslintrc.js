@@ -50,6 +50,8 @@ module.exports = {
       {
         overrides: {
           '+': 'after',
+          ':': 'before',
+          '?': 'before',
         },
       },
     ],
