@@ -22,7 +22,7 @@ function hashPassword(
   };
 }
 
-export function createPasswordHash(
+export function createPasswordHashInfo(
   plaintextPassword: string,
 ): PasswordHashInfo {
   const salt = randomBytes(128).toString('base64');

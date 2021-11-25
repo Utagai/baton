@@ -1,12 +1,12 @@
 import { pbkdf2Sync } from 'crypto';
 
-import { createPasswordHash, passwordMatchesHash } from './Password';
+import { createPasswordHashInfo, passwordMatchesHash } from './Password';
 
 describe('createPasswordHash', () => {
   // Unclear just how useful this test even is really...
   test('creates the correct hash', () => {
     const plaintextPassword = 'helloworld';
-    const pwHashInfo = createPasswordHash(plaintextPassword);
+    const pwHashInfo = createPasswordHashInfo(plaintextPassword);
     const saltUsed = pwHashInfo.salt;
     const itersUsed = pwHashInfo.iterations;
     const expectedHash = pbkdf2Sync(
@@ -29,7 +29,7 @@ describe('createPasswordHash', () => {
     type seenHashes = { [hash: string]: boolean };
     const hashes: seenHashes = {};
     for (let i = 0; i < numRuns; i += 1) {
-      const { hash } = createPasswordHash(i.toString());
+      const { hash } = createPasswordHashInfo(i.toString());
       hashes[hash] = true;
     }
 

@@ -3,11 +3,13 @@ import path from 'path';
 import request from 'supertest';
 import pino from 'pino';
 import { addDays } from 'date-fns';
+import dotenv from 'dotenv';
 
 import FileMetadata from './FileMetadata';
 import { SQLiteUsersDB } from './UsersDB';
 import { SQLiteFilesDB } from './FilesDB';
 import AppFactory from './AppFactory';
+import { createPasswordHashInfo } from './Password';
 
 const testLogLevel = 'debug';
 const testSQLiteDBFile = './sqlite/baton_test.db';
@@ -16,13 +18,19 @@ const testDefaultFileLifetime = 1;
 
 jest.mock('./LoggedInCheck');
 
+dotenv.config();
+
+function getTestTableName(prefix: string, currentTestName: string) {
+  return `${prefix}_${currentTestName.replace(/ /g, '_')}`;
+}
+
 function getTestUsersDB(currentTestName: string) {
-  const testTableName = `users_${currentTestName.replace(/ /g, '_')}`;
+  const testTableName = getTestTableName('users', currentTestName);
   return new SQLiteUsersDB(testSQLiteDBFile, testTableName);
 }
 
 function getTestFilesDB(currentTestName: string) {
-  const testTableName = `files_${currentTestName.replace(/ /g, '_')}`;
+  const testTableName = getTestTableName('files', currentTestName);
   return new SQLiteFilesDB(testSQLiteDBFile, testTableName);
 }
 
@@ -59,6 +67,11 @@ beforeEach(() => {
   files.forEach((file) => {
     expect(filesDB.deleteFile(file.id));
   });
+
+  const usersDB = getTestUsersDB(currentTestName);
+  usersDB.db
+    .prepare(`DROP TABLE '${getTestTableName('users', currentTestName)}'`)
+    .run();
 });
 
 beforeAll(() => {
@@ -362,5 +375,60 @@ describe('download', () => {
       .then((resp) => {
         expect(resp.body.msg).toBe('Not Found');
       });
+  });
+});
+
+describe('login', () => {
+  test('successful login', async () => {
+    const { currentTestName } = expect.getState();
+    const usersDB = getTestUsersDB(currentTestName);
+    const testUsername = 'test';
+    const testPlaintextPassword = 'helloworld';
+    const testPasswordHashInfo = createPasswordHashInfo(testPlaintextPassword);
+    expect(
+      usersDB.addUser({
+        username: testUsername,
+        passwordHashInfo: testPasswordHashInfo,
+      }),
+    ).toBe(1);
+
+    const app = getTestApp(currentTestName);
+    await request(app)
+      .post('/login')
+      .field('username', testUsername)
+      .field('password', testPlaintextPassword)
+      .expect(200);
+  });
+
+  test('invalid login due to bad credentials', async () => {
+    const { currentTestName } = expect.getState();
+    const usersDB = getTestUsersDB(currentTestName);
+    const testUsername = 'test';
+    const testPlaintextPassword = 'helloworld';
+    const testPasswordHashInfo = createPasswordHashInfo(testPlaintextPassword);
+    expect(
+      usersDB.addUser({
+        username: testUsername,
+        passwordHashInfo: testPasswordHashInfo,
+      }),
+    ).toBe(1);
+
+    const app = getTestApp(currentTestName);
+    await request(app)
+      .post('/login')
+      .field('username', testUsername)
+      .field('password', 'i am wrong')
+      .expect(403);
+  });
+
+  test('invalid login due to non existent user', async () => {
+    const { currentTestName } = expect.getState();
+
+    const app = getTestApp(currentTestName);
+    await request(app)
+      .post('/login')
+      .field('username', 'i dont exist')
+      .field('password', 'and neither do i')
+      .expect(403);
   });
 });
