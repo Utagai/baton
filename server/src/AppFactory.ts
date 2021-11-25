@@ -69,6 +69,15 @@ function AppFactory(
     next();
   });
 
+  // sendErr is a tiny helper for returning JSON errors from the express endpoints.
+  const sendErr = (
+    res: express.Response,
+    msg: string,
+    details?: Error | object,
+  ) => {
+    res.status(500).send(JSON.stringify({ msg, ...details }));
+  };
+
   // Middleware for verifying the JWT tokens.
   const mustBeLoggedIn = (
     req: express.Request,
@@ -80,22 +89,12 @@ function AppFactory(
       process.env.JWT_SECRET,
       (err: Error, _: any) => {
         if (err) {
-          console.log('err: ', err);
-          res.redirect('/');
+          sendErr(res, 'failed to authenticate');
         } else {
           next();
         }
       },
     );
-  };
-
-  // sendErr is a tiny helper for returning JSON errors from the express endpoints.
-  const sendErr = (
-    res: express.Response,
-    msg: string,
-    details?: Error | object,
-  ) => {
-    res.status(500).send(JSON.stringify({ msg, ...details }));
   };
 
   // /files returns a listing of all the files, _including_ expired files.
