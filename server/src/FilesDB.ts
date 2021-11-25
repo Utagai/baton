@@ -1,5 +1,6 @@
 import sqlite from 'better-sqlite3';
 
+import SQLiteDB from './SQLiteDB';
 import FileMetadata from './FileMetadata';
 
 export interface FilesDB {
@@ -10,28 +11,13 @@ export interface FilesDB {
   deleteExpiredFiles(): number;
 }
 
-export class SQLiteFilesDB implements FilesDB {
+export class SQLiteFilesDB extends SQLiteDB implements FilesDB {
   db: sqlite.Database;
 
   tableName: string;
 
   constructor(sqliteDBPath: string, tableName: string = 'files') {
-    this.db = sqlite(sqliteDBPath);
-    this.tableName = tableName;
-    if (
-      this.db
-        .prepare(
-          `SELECT name FROM sqlite_schema WHERE type = 'table' AND name='${tableName}'`,
-        )
-        .get() === undefined
-    ) {
-      // If the table does not yet exist, create it.
-      this.db
-        .prepare(
-          `create table ${tableName}(id varchar, name varchar, size int, uploadTime date, expireTime date)`,
-        )
-        .run();
-    }
+    super(sqliteDBPath, tableName);
   }
 
   getAllFiles(): FileMetadata[] {
