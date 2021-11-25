@@ -15,11 +15,10 @@ function hashPassword(
 ): PasswordHashInfo {
   const hash = pbkdf2Sync(plaintextPassword, salt, iterations, 512, 'sha512');
 
-  console.log('hash to hex: ', hash.toString('hex'));
   return {
     hash: hash.toString('hex'),
     salt,
-    iterations: defaultPBKDF2Iterations,
+    iterations,
   };
 }
 
@@ -33,7 +32,7 @@ export function createPasswordHash(
 export function passwordMatchesHash(
   plaintextPassword: string,
   expectedPasswordHash: PasswordHashInfo,
-) {
+): boolean {
   const hashedPassword = hashPassword(
     plaintextPassword,
     expectedPasswordHash.salt,
