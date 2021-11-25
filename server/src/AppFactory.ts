@@ -86,7 +86,7 @@ function AppFactory(
       process.env.JWT_SECRET,
       (err: Error, _: any) => {
         if (err) {
-          sendErr(res, 'failed to authenticate');
+          res.status(403).send({ msg: 'failed to authenticate' });
         } else {
           next();
         }
