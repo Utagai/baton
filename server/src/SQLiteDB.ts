@@ -5,7 +5,13 @@ class SQLiteDB {
 
   tableName: string;
 
-  constructor(sqliteDBPath: string, tableName: string) {
+  // columnDescription is a SQL-style CREATE TABLE column listing.
+  // e.g. (id varchar, size int).
+  constructor(
+    sqliteDBPath: string,
+    tableName: string,
+    columnDescription: string,
+  ) {
     this.db = sqlite(sqliteDBPath);
     this.tableName = tableName;
     if (
@@ -16,11 +22,7 @@ class SQLiteDB {
         .get() === undefined
     ) {
       // If the table does not yet exist, create it.
-      this.db
-        .prepare(
-          `create table ${tableName}(id varchar, name varchar, size int, uploadTime date, expireTime date)`,
-        )
-        .run();
+      this.db.prepare(`create table ${tableName}${columnDescription}`).run();
     }
   }
 }

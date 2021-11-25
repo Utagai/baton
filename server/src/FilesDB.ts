@@ -17,7 +17,11 @@ export class SQLiteFilesDB extends SQLiteDB implements FilesDB {
   tableName: string;
 
   constructor(sqliteDBPath: string, tableName: string = 'files') {
-    super(sqliteDBPath, tableName);
+    super(
+      sqliteDBPath,
+      tableName,
+      '(id varchar, name varchar, size int, uploadTime date, expireTime date)',
+    );
   }
 
   getAllFiles(): FileMetadata[] {

@@ -8,7 +8,11 @@ export interface UsersDB {
 
 export class SQLiteUsersDB extends SQLiteDB implements UsersDB {
   constructor(sqliteDBPath: string, tableName: string = 'users') {
-    super(sqliteDBPath, tableName);
+    super(
+      sqliteDBPath,
+      tableName,
+      '(username varchar, hashedPassword varchar, salt varchar, iterations int)',
+    );
   }
 
   getUser(username: string): User | undefined {

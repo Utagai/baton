@@ -17,7 +17,11 @@ describe('sqlite db', () => {
   test('initializes table on first run correctly', () => {
     const newTableName = 'new_table';
     // eslint-disable-next-line
-    const _ = new SQLiteDB(testDBFile, newTableName);
+    const _ = new SQLiteDB(
+      testDBFile,
+      newTableName,
+      '(blah varchar, number int)',
+    );
     const db = sqlite(testDBFile);
     const listTablesStmt = db.prepare('SELECT * FROM sqlite_master');
     // This is a fresh sqlite file, so there should only be a single row for the
