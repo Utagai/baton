@@ -5,6 +5,7 @@ import pino from 'pino';
 import { addDays } from 'date-fns';
 
 import FileMetadata from './FileMetadata';
+import { SQLiteUsersDB } from './UsersDB';
 import { SQLiteFilesDB } from './FilesDB';
 import AppFactory from './AppFactory';
 
@@ -13,8 +14,15 @@ const testSQLiteDBFile = './sqlite/baton_test.db';
 const testUploadPath = './uploaded-test/';
 const testDefaultFileLifetime = 1;
 
+jest.mock('./LoggedInCheck');
+
+function getTestUsersDB(currentTestName: string) {
+  const testTableName = `users_${currentTestName.replace(/ /g, '_')}`;
+  return new SQLiteUsersDB(testSQLiteDBFile, testTableName);
+}
+
 function getTestFilesDB(currentTestName: string) {
-  const testTableName = currentTestName.replace(/ /g, '_');
+  const testTableName = `files_${currentTestName.replace(/ /g, '_')}`;
   return new SQLiteFilesDB(testSQLiteDBFile, testTableName);
 }
 
@@ -29,10 +37,17 @@ function getTestApp(currentTestName: string) {
       },
     },
   });
+  const usersDB = getTestUsersDB(currentTestName);
   const filesDB = getTestFilesDB(currentTestName);
   const fileUploadPath = testUploadPath;
   const defaultFileLifetimeInDays = testDefaultFileLifetime;
-  return AppFactory(logger, filesDB, fileUploadPath, defaultFileLifetimeInDays);
+  return AppFactory(
+    logger,
+    usersDB,
+    filesDB,
+    fileUploadPath,
+    defaultFileLifetimeInDays,
+  );
 }
 
 // Run the clean-up _before_ the tests run, so that on failure, we still have
@@ -219,6 +234,7 @@ describe('upload', () => {
     };
     const app = AppFactory(
       logger,
+      getTestUsersDB(currentTestName),
       mockedFilesDB,
       fileUploadPath,
       defaultFileLifetimeInDays,

@@ -10,7 +10,13 @@ import cookieParser from 'cookie-parser';
 import { UsersDB } from './UsersDB';
 import { FilesDB } from './FilesDB';
 import { passwordMatchesHash } from './Password';
+import loggedInCheck from './LoggedInCheck';
 import FileMetadata from './FileMetadata';
+
+// sendErr is a tiny helper for returning JSON errors from the express endpoints.
+function sendErr(res: express.Response, msg: string, details?: Error | object) {
+  res.status(500).send(JSON.stringify({ msg, ...details }));
+}
 
 // AppFactory hides much of the actual configuration of the express server,
 // namely, its routes and some dependent components like the sqlite client.
@@ -66,36 +72,32 @@ function AppFactory(
     next();
   });
 
-  // sendErr is a tiny helper for returning JSON errors from the express endpoints.
-  const sendErr = (
-    res: express.Response,
-    msg: string,
-    details?: Error | object,
-  ) => {
-    res.status(500).send(JSON.stringify({ msg, ...details }));
-  };
+  // Define this first, before setting the loggedInCheck middleware, since we
+  // obviously cannot require login to use the /login endpoint (chicken & egg).
+  app.post('/login', (req, res) => {
+    const {
+      body: { username, password: plaintextPassword },
+    } = req;
 
-  // Middleware for verifying the JWT tokens.
-  const mustBeLoggedIn = (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction,
-  ) => {
-    jwt.verify(
-      req.cookies.token,
-      process.env.JWT_SECRET,
-      (err: Error, _: any) => {
-        if (err) {
-          res.status(403).send({ msg: 'failed to authenticate' });
-        } else {
-          next();
-        }
-      },
-    );
-  };
+    const user = usersDB.getUser(username);
+
+    if (
+      user !== undefined &&
+      passwordMatchesHash(plaintextPassword, user.passwordHashInfo)
+    ) {
+      const jwtToken = jwt.sign({ username }, process.env.JWT_SECRET);
+      res.cookie('token', jwtToken, { httpOnly: true });
+      return res.send({});
+    }
+
+    res.status(403);
+    return res.send({ err: 'failed authentication' });
+  });
+
+  app.use(loggedInCheck);
 
   // /files returns a listing of all the files, _including_ expired files.
-  app.get('/files', mustBeLoggedIn, (_, res) => {
+  app.get('/files', (_, res) => {
     const files = filesDB.getAllFiles();
     res.send({
       files,
@@ -105,7 +107,7 @@ function AppFactory(
   // /upload uploads the specified file contents. Metadata about the file is
   // created at this time as well, making the file available for listing/download
   // once this endpoint returns.
-  app.post('/upload', mustBeLoggedIn, (req, res) => {
+  app.post('/upload', (req, res) => {
     const { body: uploadRequest } = req;
     if (!uploadRequest.name || !uploadRequest.id || !uploadRequest.size) {
       sendErr(
@@ -153,7 +155,7 @@ function AppFactory(
   // /delete/:id deletes the file specified by :id. This does not delete the file
   // on disk.
   // TODO: This _should_ delete the file on disk.
-  app.delete('/delete/:id', mustBeLoggedIn, (req, res) => {
+  app.delete('/delete/:id', (req, res) => {
     const {
       params: { id },
     } = req;
@@ -170,14 +172,14 @@ function AppFactory(
   // deleted on disk.
   // TODO: Deletion of expired data should actually happen in the background of
   // this server or some separate process.
-  app.delete('/deleteexpired', mustBeLoggedIn, (_req, res) => {
+  app.delete('/deleteexpired', (_req, res) => {
     filesDB.deleteExpiredFiles();
     res.send({});
   });
 
   // /download/:id returns the file specified by :id as a downloadable file. This
   // should trigger a download in the user's browser.
-  app.get('/download/:id', mustBeLoggedIn, (req, res) => {
+  app.get('/download/:id', (req, res) => {
     const {
       params: { id },
     } = req;
@@ -201,29 +203,7 @@ function AppFactory(
     });
   });
 
-  // /download/:id returns the file specified by :id as a downloadable file. This
-  // should trigger a download in the user's browser.
-  app.post('/login', (req, res) => {
-    const {
-      body: { username, password: plaintextPassword },
-    } = req;
-
-    const user = usersDB.getUser(username);
-
-    if (
-      user !== undefined &&
-      passwordMatchesHash(plaintextPassword, user.passwordHashInfo)
-    ) {
-      const jwtToken = jwt.sign({ username }, process.env.JWT_SECRET);
-      res.cookie('token', jwtToken, { httpOnly: true });
-      return res.send({});
-    }
-
-    res.status(401);
-    return res.send({ err: 'failed authentication' });
-  });
-
-  app.get('/isLoggedIn', mustBeLoggedIn, (_, res) => {
+  app.get('/isLoggedIn', (_, res) => {
     // Due to our login-checking middleware, this code will only ever be
     // executed if the user is already logged in, so simply return 200.
     res.sendStatus(200);
