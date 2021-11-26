@@ -1,6 +1,8 @@
 import React from 'react';
 
 import './index.css';
+import Banner from './Banner';
+import Button from './Button';
 import { BackendClient } from './BackendClient';
 import { success, error } from './Notify';
 
@@ -13,8 +15,7 @@ function Login(props: {
 
   const { backendClient, onSuccessfulLogin } = props;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogIn = async () => {
     backendClient
       .login(username, password)
       .then((resp) => {
@@ -29,34 +30,47 @@ function Login(props: {
       });
   };
 
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    return handleLogIn();
+  };
+
   return (
-    <div>
-      <h1>Please Log In</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="grid justify-center place-items-center">
+      <Banner />
+      <form onSubmit={handleFormSubmit}>
         <label htmlFor="username_input">
-          <p>Username</p>
-          <input
-            id="username_input"
-            type="text"
-            placeholder="username"
-            onChange={(e) => {
-              setUsername(e.target.value);
-            }}
-          />
+          <div className="m-2">
+            <input
+              className="text-2xl border-2 rounded-sm text-center"
+              id="username_input"
+              type="text"
+              placeholder="user"
+              onChange={(e) => {
+                setUsername(e.target.value);
+              }}
+            />
+          </div>
         </label>
         <label htmlFor="password_input">
-          <p>Password</p>
-          <input
-            id="password_input"
-            type="password"
-            placeholder="password"
-            onChange={(e) => {
-              setPassword(e.target.value);
-            }}
-          />
+          <div className="m-2">
+            <input
+              className="text-2xl border-2 rounded-sm text-center"
+              id="password_input"
+              type="password"
+              placeholder="pass"
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+            />
+          </div>
         </label>
-        <div>
-          <button type="submit">Submit</button>
+        {/* This input exists so that pressing Enter will submit the form */}
+        <input type="submit" className="hidden" />
+        <div className="grid place-items-center">
+          <Button ariaLabel="Log In" onClick={handleLogIn}>
+            🔑 Log In
+          </Button>
         </div>
       </form>
     </div>

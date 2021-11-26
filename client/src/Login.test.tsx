@@ -41,12 +41,11 @@ describe('login form', () => {
       />,
     );
 
-    expect(screen.getByText('Please Log In')).toBeInTheDocument();
-    expect(screen.getByText('Username')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('username')).toBeInTheDocument(); // Username input field.
-    expect(screen.getByPlaceholderText('password')).toBeInTheDocument();
-    expect(screen.getByText('Password')).toBeInTheDocument();
-    expect(screen.getByText('Submit')).toBeInTheDocument();
+    expect(screen.getByText(/baton/i)).toBeInTheDocument();
+    expect(screen.getByText(/🪄/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('user')).toBeInTheDocument(); // Username input field.
+    expect(screen.getByPlaceholderText('pass')).toBeInTheDocument();
+    expect(screen.getByText('🔑 Log In')).toBeInTheDocument();
   });
 
   test('with valid credentials passes', async () => {
@@ -60,16 +59,16 @@ describe('login form', () => {
       />,
     );
 
-    const usernameInput = screen.getByPlaceholderText('username');
+    const usernameInput = screen.getByPlaceholderText('user');
     act(() => {
       userEvent.type(usernameInput, testUsername);
     });
-    const passwordInput = screen.getByPlaceholderText('password');
+    const passwordInput = screen.getByPlaceholderText('pass');
     act(() => {
       userEvent.type(passwordInput, testPlaintextPassword);
     });
 
-    const submitButton = screen.getByText('Submit');
+    const submitButton = screen.getByText('🔑 Log In');
     act(() => {
       userEvent.click(submitButton);
     });
@@ -87,16 +86,16 @@ describe('login form', () => {
       />,
     );
 
-    const usernameInput = screen.getByPlaceholderText('username');
+    const usernameInput = screen.getByPlaceholderText('user');
     act(() => {
       userEvent.type(usernameInput, testUsername);
     });
-    const passwordInput = screen.getByPlaceholderText('password');
+    const passwordInput = screen.getByPlaceholderText('pass');
     act(() => {
       userEvent.type(passwordInput, 'not correct password');
     });
 
-    const submitButton = screen.getByText('Submit');
+    const submitButton = screen.getByText('🔑 Log In');
     act(() => {
       userEvent.click(submitButton);
     });

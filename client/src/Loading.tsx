@@ -3,7 +3,6 @@ const Circle = (props: { animationDelay: number }) => {
 
   const baseStyles =
     'inline-block border-t-2 border-b-2 h-14 w-14 m-2 rounded-full animate-bounce';
-  console.log('clases: ', `${baseStyles} animation-delay-${animationDelay}`);
   return <span className={`${baseStyles} animation-delay-${animationDelay}`} />;
 };
 

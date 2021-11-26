@@ -68,7 +68,7 @@ describe('app', () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByText('Please Log In')).toBeInTheDocument();
+      expect(screen.getByText('🔑 Log In')).toBeInTheDocument();
     });
     server.close();
   });
@@ -94,10 +94,7 @@ describe('app', () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByText('baton')).toBeInTheDocument();
-      // Remember that the wand is in a separate element due to some weird issues
-      // with it disappearing in some systems/browsers when italicized...
-      expect(screen.getByText('🪄')).toBeInTheDocument();
+      expect(screen.queryByText('🔑 Log In')).toBeNull();
     });
     server.close();
   });
