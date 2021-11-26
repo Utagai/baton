@@ -17,6 +17,9 @@ enum AuthState {
 // disable the HTTP-only setting, but it is less secure, so we're paying the
 // cost of an extra API call instead.
 async function fetchAuthState(): Promise<AuthState> {
+  // LMAO. OK, listen, I'm really proud of my 'Loading' animation and I will not
+  // have it be unseen!!!
+  // await new Promise((resolve) => setTimeout(resolve, 5000));
   return fetch('http://localhost:3000/isLoggedIn')
     .then((resp) => {
       if (resp.status === 200) {

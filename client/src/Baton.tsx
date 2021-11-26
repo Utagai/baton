@@ -10,6 +10,9 @@ import CustomText from './CustomText';
 import FileMetadata from './FileMetadata';
 import { error, info } from './Notify';
 
+// TODO: We should make this just actual components...
+// e.g.
+// const tableElem = (props) => {}
 function tableElem(
   backendClient: BackendClient,
   metadatas: FileMetadata[],
