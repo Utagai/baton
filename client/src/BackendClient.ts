@@ -40,7 +40,7 @@ export class BackendClient {
         )
         .then(([json, statusCode]: [any, number]) => {
           if (statusCode !== 200) {
-            return Promise.reject(new BackendError(json, statusCode));
+            return Promise.reject(new BackendError(json));
           }
           return Promise.resolve({ json, statusCode });
         })

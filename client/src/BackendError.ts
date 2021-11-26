@@ -1,24 +1,17 @@
 class BackendError extends Error {
-  jsonResp: any;
+  respJSON: any;
 
-  code: number;
-
-  constructor(json: any, statusCode: number) {
+  constructor(json: any) {
     super(JSON.stringify(json));
 
     // Set the prototype explicitly.
     Object.setPrototypeOf(this, BackendError.prototype);
 
-    this.jsonResp = json;
-    this.code = statusCode;
+    this.respJSON = json;
   }
 
-  json(): any {
-    return this.jsonResp;
-  }
-
-  statusCode(): number {
-    return this.code;
+  responseJSON(): any {
+    return this.respJSON;
   }
 }
 

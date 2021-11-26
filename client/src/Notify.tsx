@@ -29,7 +29,7 @@ function sendNotification(
   if (details) {
     const detailText =
       details instanceof BackendError
-        ? JSON.stringify(details.json(), null, 2)
+        ? JSON.stringify(details.responseJSON(), null, 2)
         : JSON.stringify(details, null, 2);
 
     detailElems = (
