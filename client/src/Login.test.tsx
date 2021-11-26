@@ -8,6 +8,9 @@ import Login from './Login';
 const testUsername = 'test';
 const testPlaintextPassword = 'hello';
 
+// TODO: Once we parameterize the host from higher up on the stack we will
+// likely have to update the host URIs here.
+
 const server = setupServer(
   rest.post('/login', (req, res, ctx) => {
     const { username, password } = req.body as Record<string, any>;

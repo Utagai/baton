@@ -16,14 +16,16 @@ const filesEndpointDefaultFile = {
 };
 
 const server = setupServer(
-  rest.get('/files', (_, res, ctx) =>
+  rest.get('http://localhost/files', (_, res, ctx) =>
     res(
       ctx.json({
         files: [filesEndpointDefaultFile],
       }),
     ),
   ),
-  rest.delete('/deleteexpired', (_, res, ctx) => res(ctx.json({}))),
+  rest.delete('http://localhost/deleteexpired', (_, res, ctx) =>
+    res(ctx.json({})),
+  ),
 );
 
 beforeAll(() => server.listen());
@@ -33,7 +35,7 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-describe('app', () => {
+describe('baton page', () => {
   test('renders title', () => {
     render(<Baton host="http://localhost/" />);
     const titleElement = screen.getByText(/baton/i);
@@ -125,7 +127,9 @@ describe('app', () => {
     expect(files.length).toBeLessThan(1000);
     const filesEndpointMock = jest.fn(() => ({ files }));
     server.use(
-      rest.get('/files', (_, res, ctx) => res(ctx.json(filesEndpointMock()))),
+      rest.get('http://localhost/files', (_, res, ctx) =>
+        res(ctx.json(filesEndpointMock())),
+      ),
     );
 
     render(<Baton host="http://localhost/" />);
@@ -170,10 +174,10 @@ describe('app', () => {
     // file has been deleted or not. If it has been deleted, we do not return it
     // from /files, otherwise we do.
     server.use(
-      rest.get('/files', (_, res, ctx) =>
+      rest.get('http://localhost/files', (_, res, ctx) =>
         res(ctx.json({ files: [originalFile] })),
       ),
-      rest.delete('/delete/:fileID', (req, res, ctx) => {
+      rest.delete('http://localhost/delete/:fileID', (req, res, ctx) => {
         expect(req.params.fileID).toEqual(originalFile.id);
         return res(ctx.json({ id: req.params.fileID }));
       }),
@@ -389,7 +393,7 @@ describe('app', () => {
         info: uuidv4(),
       };
       server.use(
-        rest.get('/files', (_, res, ctx) =>
+        rest.get('http://localhost/files', (_, res, ctx) =>
           res(ctx.status(500), ctx.json(expectedErrDetails)),
         ),
       );
@@ -412,7 +416,7 @@ describe('app', () => {
         info: uuidv4(),
       };
       server.use(
-        rest.post('/upload', (_, res, ctx) =>
+        rest.post('http://localhost/upload', (_, res, ctx) =>
           res(ctx.status(500), ctx.json(expectedErrDetails)),
         ),
       );
@@ -451,7 +455,7 @@ describe('app', () => {
         info: uuidv4(),
       };
       server.use(
-        rest.post('/upload', (_, res, ctx) =>
+        rest.post('http://localhost/upload', (_, res, ctx) =>
           res(ctx.status(500), ctx.json(expectedErrDetails)),
         ),
       );
@@ -489,7 +493,7 @@ describe('app', () => {
       // file has been deleted or not. If it has been deleted, we do not return it
       // from /files, otherwise we do.
       server.use(
-        rest.delete(`/delete/:fileID`, (_, res, ctx) =>
+        rest.delete(`http://localhost/delete/:fileID`, (_, res, ctx) =>
           res(ctx.status(500), ctx.json(expectedErrDetails)),
         ),
       );

@@ -78,7 +78,7 @@ function notify(notifyKind: NotifyKind, msg: string, details?: any) {
       break;
     }
     default:
-      notifyFunc = cogoToast.info;
+      throw Error(`unreachable; unknown notification kind: ${notifyKind}`);
   }
 
   sendNotification(notifyKind, notifyFunc, msg, details);

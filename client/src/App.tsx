@@ -15,7 +15,7 @@ enum AuthStatus {
 function determineAuthStatus(
   setAuthStatus: (newAuthStatus: AuthStatus) => void,
 ) {
-  fetch('/isLoggedIn')
+  fetch('http://localhost:3000/isLoggedIn')
     .then((resp) => {
       if (resp.status === 200) {
         setAuthStatus(AuthStatus.Authenticated);
