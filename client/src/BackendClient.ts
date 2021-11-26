@@ -58,8 +58,4 @@ export class BackendClient {
   async delete(id: string): Promise<BackendResponse<{ id: string }>> {
     return this.wrappedFetch(`/delete/${id}`, 'DELETE');
   }
-
-  async deleteExpired(): Promise<BackendResponse<{}>> {
-    return this.wrappedFetch('/deleteexpired', 'DELETE');
-  }
 }
