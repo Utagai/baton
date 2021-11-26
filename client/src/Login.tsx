@@ -38,13 +38,12 @@ function Login(props: { onSuccessfulLogin: () => void }) {
       password,
     })
       .then(() => {
+        onSuccessfulLogin();
         // I think it looks better as 'user'. Could probably just do { username }
         // too.
-        onSuccessfulLogin();
         success('logged in successfully', { user: username });
       })
       .catch((err) => {
-        console.log('err: ', err);
         error('failed to login', err);
       });
   };
@@ -58,6 +57,7 @@ function Login(props: { onSuccessfulLogin: () => void }) {
           <input
             id="username_input"
             type="text"
+            placeholder="username"
             onChange={(e) => {
               setUsername(e.target.value);
             }}
@@ -68,6 +68,7 @@ function Login(props: { onSuccessfulLogin: () => void }) {
           <input
             id="password_input"
             type="password"
+            placeholder="password"
             onChange={(e) => {
               setPassword(e.target.value);
             }}
