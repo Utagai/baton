@@ -85,11 +85,11 @@ function onMount(
     // unmounted. If that happens, mounted will become false because this
     // clean-up function is called. Using this boolean then lets us avoid
     // setting state on an unmounted component.
-    // Finally, note that this is for our root component. However, since baton
-    // is a SPA, this root component will actually _never_ unmount. Therefore,
-    // this code is actually just written to get rid of a warning & there is
-    // no real issue here. If the warning came from a lower-level component,
-    // then the answer would be to move up the state handling to a
+    // Finally, note that this is for our main Baton component. Since this
+    // component will actually _never_ unmount, this bit of code is not
+    // necessary.  This code is actually just written to get rid of a warning
+    // & there is no real issue here. If the warning came from a lower-level
+    // component, then the answer would be to move up the state handling to a
     // higher-level component or use pub/sub.
     return () => {
       mounted = false;
@@ -97,13 +97,11 @@ function onMount(
   };
 }
 
-const Baton = (props: { host: string }) => {
+const Baton = (props: { backendClient: BackendClient }) => {
   const [metadatas, setMetadatas] = React.useState<FileMetadata[]>([]);
   const textInputRef = React.useRef<HTMLDivElement>(null);
 
-  const { host } = props;
-
-  const backendClient = new BackendClient(host);
+  const { backendClient } = props;
 
   // useEffect with a state of [] runs only once, at mount time.
   React.useEffect(onMount(backendClient, setMetadatas), []);

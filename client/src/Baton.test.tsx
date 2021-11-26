@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import userEvent from '@testing-library/user-event';
 
 import Baton from './Baton';
+import { BackendClient } from './BackendClient';
 
 const filesEndpointDefaultFile = {
   name: 'DEFAULT /files HANDLER',
@@ -37,7 +38,7 @@ afterAll(() => server.close());
 
 describe('baton page', () => {
   test('renders title', () => {
-    render(<Baton host="http://localhost/" />);
+    render(<Baton backendClient={new BackendClient('http://localhost/')} />);
     const titleElement = screen.getByText(/baton/i);
     expect(titleElement).toBeInTheDocument();
   });
@@ -46,31 +47,31 @@ describe('baton page', () => {
   // 'baton' text because it would have trouble rendering if we tried italicizing
   // it.
   test('renders baton emoji', () => {
-    render(<Baton host="http://localhost/" />);
+    render(<Baton backendClient={new BackendClient('http://localhost/')} />);
     const titleElement = screen.getByText(/🪄/i);
     expect(titleElement).toBeInTheDocument();
   });
 
   test('renders table', () => {
-    render(<Baton host="http://localhost/" />);
+    render(<Baton backendClient={new BackendClient('http://localhost/')} />);
     const tableElement = screen.getByRole('table');
     expect(tableElement).toBeInTheDocument();
   });
 
   test('renders write-a-file button', () => {
-    render(<Baton host="http://localhost/" />);
+    render(<Baton backendClient={new BackendClient('http://localhost/')} />);
     const writeAFileButton = screen.getByText(/Write a file/);
     expect(writeAFileButton).toBeInTheDocument();
   });
 
   test('renders upload-a-file button', () => {
-    render(<Baton host="http://localhost/" />);
+    render(<Baton backendClient={new BackendClient('http://localhost/')} />);
     const uploadAFileButton = screen.getByText(/Upload a file/);
     expect(uploadAFileButton).toBeInTheDocument();
   });
 
   test('toggles text entry UI when write-a-file is clicked', () => {
-    render(<Baton host="http://localhost/" />);
+    render(<Baton backendClient={new BackendClient('http://localhost/')} />);
 
     const textArea = screen.getByRole('textbox');
     expect(textArea).toBeInTheDocument();
@@ -132,7 +133,7 @@ describe('baton page', () => {
       ),
     );
 
-    render(<Baton host="http://localhost/" />);
+    render(<Baton backendClient={new BackendClient('http://localhost/')} />);
 
     // Wait for React to paint the data in the rows.
     await waitFor(() => {
@@ -183,7 +184,7 @@ describe('baton page', () => {
       }),
     );
 
-    render(<Baton host="http://localhost/" />);
+    render(<Baton backendClient={new BackendClient('http://localhost/')} />);
 
     // Wait for React to paint the Delete button.
     await waitFor(() => {
@@ -278,7 +279,7 @@ describe('baton page', () => {
       const getEndpointCalledStatuses = startServer();
       const fileContents = 'text';
 
-      render(<Baton host="http://localhost/" />);
+      render(<Baton backendClient={new BackendClient('http://localhost/')} />);
 
       await waitFor(() => {
         expect(getEndpointCalledStatuses().filesCalled).toBeTruthy();
@@ -309,7 +310,7 @@ describe('baton page', () => {
       const getEndpointCalledStatuses = startServer();
       const fileContents = 'text';
 
-      render(<Baton host="http://localhost/" />);
+      render(<Baton backendClient={new BackendClient('http://localhost/')} />);
 
       await waitFor(() => {
         expect(getEndpointCalledStatuses().filesCalled).toBeTruthy();
@@ -344,7 +345,7 @@ describe('baton page', () => {
     test('custom content', async () => {
       const getEndpointCalledStatuses = startServer();
       const fileContents = 'text';
-      render(<Baton host="http://localhost/" />);
+      render(<Baton backendClient={new BackendClient('http://localhost/')} />);
 
       await waitFor(() => {
         expect(getEndpointCalledStatuses().filesCalled).toBeTruthy();
@@ -378,7 +379,7 @@ describe('baton page', () => {
     // there will be a bunch and possibly even more in the future, and the
     // value-add of more testing code for it doesn't seem to justify the cost.
     test('on app load', async () => {
-      render(<Baton host="http://localhost/" />);
+      render(<Baton backendClient={new BackendClient('http://localhost/')} />);
 
       await waitFor(() => {
         expect(
@@ -397,7 +398,7 @@ describe('baton page', () => {
           res(ctx.status(500), ctx.json(expectedErrDetails)),
         ),
       );
-      render(<Baton host="http://localhost/" />);
+      render(<Baton backendClient={new BackendClient('http://localhost/')} />);
 
       await waitFor(() => {
         expect(screen.getByText(/Failed to fetch files/)).toBeInTheDocument();
@@ -420,7 +421,7 @@ describe('baton page', () => {
           res(ctx.status(500), ctx.json(expectedErrDetails)),
         ),
       );
-      render(<Baton host="http://localhost/" />);
+      render(<Baton backendClient={new BackendClient('http://localhost/')} />);
 
       await waitFor(() => {
         // Wait for React to paint the Upload button.
@@ -459,7 +460,7 @@ describe('baton page', () => {
           res(ctx.status(500), ctx.json(expectedErrDetails)),
         ),
       );
-      render(<Baton host="http://localhost/" />);
+      render(<Baton backendClient={new BackendClient('http://localhost/')} />);
 
       const fileContents = 'hello';
       await waitFor(() => {
@@ -498,7 +499,7 @@ describe('baton page', () => {
         ),
       );
 
-      render(<Baton host="http://localhost/" />);
+      render(<Baton backendClient={new BackendClient('http://localhost/')} />);
 
       // Wait for React to paint the Delete button.
       await waitFor(() => {

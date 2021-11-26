@@ -28,17 +28,15 @@ function uploadContentToBackend(
   formData.append('size', `${textAreaBlob.size}`);
   formData.append('id', uuidv4());
   formData.append('file', textAreaBlob);
-  // TODO: Do we need to specify any particular headers here?
   backendClient
     .upload(formData)
     // A little bit of cleverness. We return a single promise that is a tuple of
     // the JSON body + status code, so that when we handle the JSON body, we have
     // the context of the response's status code to determine if the JSON body is
     // actual metadata or a document describing error.
-    // TODO: De-dupe this upload logic.
     .then((resp) => {
       addMetadataToState(resp.json);
-      return success('uploaded custom text', { filename: customFilename });
+      return success('uploaded custom content', { filename: customFilename });
     })
     .catch((err: BackendError) => error('failed to upload', err));
 }

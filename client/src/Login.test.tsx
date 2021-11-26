@@ -4,6 +4,7 @@ import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import Login from './Login';
+import { BackendClient } from './BackendClient';
 
 const testUsername = 'test';
 const testPlaintextPassword = 'hello';
@@ -12,7 +13,7 @@ const testPlaintextPassword = 'hello';
 // likely have to update the host URIs here.
 
 const server = setupServer(
-  rest.post('/login', (req, res, ctx) => {
+  rest.post('http://localhost/login', (req, res, ctx) => {
     const { username, password } = req.body as Record<string, any>;
     if (testUsername === username && testPlaintextPassword === password) {
       return res(ctx.status(200), ctx.json({}));
@@ -33,7 +34,12 @@ afterEach(() => {
 
 describe('login form', () => {
   test('is rendered correctly', () => {
-    render(<Login onSuccessfulLogin={() => {}} />);
+    render(
+      <Login
+        backendClient={new BackendClient('http://localhost/')}
+        onSuccessfulLogin={() => {}}
+      />,
+    );
 
     expect(screen.getByText('Please Log In')).toBeInTheDocument();
     expect(screen.getByText('Username')).toBeInTheDocument();
@@ -47,6 +53,7 @@ describe('login form', () => {
     let loginWasSuccessful = false;
     render(
       <Login
+        backendClient={new BackendClient('http://localhost/')}
         onSuccessfulLogin={() => {
           loginWasSuccessful = true;
         }}
@@ -73,7 +80,12 @@ describe('login form', () => {
   });
 
   test('with invalid credentials fails', async () => {
-    render(<Login onSuccessfulLogin={() => {}} />);
+    render(
+      <Login
+        backendClient={new BackendClient('http://localhost/')}
+        onSuccessfulLogin={() => {}}
+      />,
+    );
 
     const usernameInput = screen.getByPlaceholderText('username');
     act(() => {
@@ -90,6 +102,9 @@ describe('login form', () => {
     });
 
     await waitFor(() => {
+      // TODO: Waiting on notifications to appear on the UI is a bit fragile it
+      // feels like... is there a better way, or is this the best way because it
+      // most closely mimics how a _user_ would use Baton?
       expect(screen.getByText(/Failed to login/)).toBeInTheDocument();
     });
   });

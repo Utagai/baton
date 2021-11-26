@@ -1,11 +1,6 @@
 import BackendError from './BackendError';
 import FileMetadata from './FileMetadata';
 
-// TODO for when we are back:
-// * How exactly does CSRF token prevent CSRF?
-// * How is CSURF doing things such that it accomplishes the requirements of
-// bullet 1?
-
 export type BackendResponse<T> = {
   json: T;
   statusCode: number;
@@ -22,14 +17,17 @@ export class BackendClient {
     endpoint: string,
     method: string,
     body?: any,
+    headers?: any,
   ): Promise<BackendResponse<T>> {
     return (
       fetch(new URL(endpoint, this.host).href, {
         method,
         credentials: 'same-origin',
         // TODO: Does setting the right content-type here, e.g., Form, help
-        // with jest tests?
+        // with jest tests? We just had an issue where not setting the content
+        // type here made MSW behave oddly...
         body,
+        headers,
       })
         // A little bit of cleverness. We return a single promise that is a tuple of
         // the JSON body + status code, so that when we handle the JSON body, we have
@@ -38,7 +36,7 @@ export class BackendClient {
         .then((resp) =>
           Promise.all([resp.json(), Promise.resolve(resp.status)]),
         )
-        .then(([json, statusCode]: [any, number]) => {
+        .then(([json, statusCode]: [T, number]) => {
           if (statusCode !== 200) {
             return Promise.reject(new BackendError(json));
           }
@@ -51,11 +49,29 @@ export class BackendClient {
     return this.wrappedFetch('/files', 'GET');
   }
 
-  async upload(data: FormData): Promise<BackendResponse<FileMetadata>> {
-    return this.wrappedFetch('/upload', 'POST', data);
+  async upload(fileData: FormData): Promise<BackendResponse<FileMetadata>> {
+    return this.wrappedFetch('/upload', 'POST', fileData);
   }
 
   async delete(id: string): Promise<BackendResponse<{ id: string }>> {
     return this.wrappedFetch(`/delete/${id}`, 'DELETE');
+  }
+
+  async login(
+    username: string,
+    plaintextPassword: string,
+  ): Promise<BackendResponse<{ loginSuccessful: boolean }>> {
+    return this.wrappedFetch(
+      '/login',
+      'POST',
+      JSON.stringify({ username, password: plaintextPassword }),
+      {
+        Accept: 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+      },
+    ).then((resp) => ({
+      json: { loginSuccessful: resp.statusCode === 200 },
+      statusCode: resp.statusCode,
+    }));
   }
 }

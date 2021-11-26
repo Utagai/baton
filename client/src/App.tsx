@@ -1,68 +1,64 @@
 import React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import './index.css';
+import { BackendClient } from './BackendClient';
 import Baton from './Baton';
 import Loading from './Loading';
 import Login from './Login';
 
-enum AuthStatus {
+enum AuthState {
   Unknown = 'UNKNOWN',
   Authenticated = 'AUTHENTICATED',
   Unauthenticated = 'UNAUTHENTICATED',
 }
 
-function determineAuthStatus(
-  setAuthStatus: (newAuthStatus: AuthStatus) => void,
-) {
-  fetch('http://localhost:3000/isLoggedIn')
+// One may wonder why we do not just look at the cookie(s). This is because our
+// cookies are HTTP-only, so we can't actually view them from here. We could
+// disable the HTTP-only setting, but it is less secure, so we're paying the
+// cost of an extra API call instead.
+async function fetchAuthState(): Promise<AuthState> {
+  return fetch('http://localhost:3000/isLoggedIn')
     .then((resp) => {
       if (resp.status === 200) {
-        setAuthStatus(AuthStatus.Authenticated);
-      } else {
-        setAuthStatus(AuthStatus.Unauthenticated);
+        return AuthState.Authenticated;
       }
+      return AuthState.Unauthenticated;
     })
     .catch((err) => {
+      /* istanbul ignore next */
       console.log('failed to determine session state: ', err);
-      setAuthStatus(AuthStatus.Unauthenticated);
+      /* istanbul ignore next */
+      return AuthState.Unauthenticated;
     });
 }
 
 const App = () => {
-  const [authStatus, setAuthStatus] = React.useState<AuthStatus>(
-    AuthStatus.Unknown,
+  const [authState, setAuthState] = React.useState<AuthState>(
+    AuthState.Unknown,
   );
 
+  const backendClient = new BackendClient('http://localhost:3000');
+
   // TODO: We should expkain this.
-  switch (authStatus) {
-    case AuthStatus.Unknown:
-      determineAuthStatus(setAuthStatus);
+  switch (authState) {
+    case AuthState.Unknown:
+      fetchAuthState().then((innerAuthState) => setAuthState(innerAuthState));
       return <Loading />;
-    case AuthStatus.Unauthenticated: {
+    case AuthState.Unauthenticated: {
       return (
         <Login
+          backendClient={backendClient}
           onSuccessfulLogin={() => {
-            setAuthStatus(AuthStatus.Authenticated);
+            setAuthState(AuthState.Authenticated);
           }}
         />
       );
     }
-    case AuthStatus.Authenticated: {
-      return (
-        <div className="wrapper">
-          <BrowserRouter>
-            <Routes>
-              <Route
-                path="/"
-                element={<Baton host="http://localhost:3000" />}
-              />
-            </Routes>
-          </BrowserRouter>
-        </div>
-      );
+    case AuthState.Authenticated: {
+      return <Baton backendClient={backendClient} />;
     }
     default: {
+      /* istanbul ignore next */
       throw Error('unreachable app state');
     }
   }

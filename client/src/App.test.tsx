@@ -8,20 +8,22 @@ afterEach(() => {
   cleanup();
 });
 
+async function sleep(timeMs: number) {
+  return new Promise((resolve) => setTimeout(resolve, timeMs));
+}
+
 // TODO: Once we parameterize the host from higher up on the stack we will
 // likely have to update the host URIs here.
 
 describe('app', () => {
   test('shows loading screen at first', async () => {
-    const endpointSleepTimeMs = 3000; // 3 seconds.
+    const isLoggedInBlockTimeMs = 3000; // 3 seconds.
     let returnedFromIsLoggedIn = false;
     const server = setupServer(
       rest.get('http://localhost:3000/isLoggedIn', async (_, res, ctx) => {
-        // Basically, make this endpoint hang for 3 seconds, so that the test
+        // Basically, make this endpoint hang for some seconds, so that the test
         // has ample time to confirm that the loading page is being shown.
-        await new Promise((resolve) =>
-          setTimeout(resolve, endpointSleepTimeMs),
-        );
+        await sleep(isLoggedInBlockTimeMs);
 
         returnedFromIsLoggedIn = true;
         return res(ctx.status(200));
@@ -49,7 +51,7 @@ describe('app', () => {
         expect(returnedFromIsLoggedIn).toBeTruthy();
       },
       // Some padding to account for inaccuracy of the timers.
-      { timeout: endpointSleepTimeMs + 1000 },
+      { timeout: isLoggedInBlockTimeMs + 1000 },
     );
     server.close();
   });
@@ -57,8 +59,6 @@ describe('app', () => {
   test('shows login screen if unauthenticated', async () => {
     const server = setupServer(
       rest.get('http://localhost:3000/isLoggedIn', async (_, res, ctx) =>
-        // Basically, make this endpoint hang for 10 seconds, so that the test
-        // has ample time to confirm that the loading page is being shown.
         res(ctx.status(403)),
       ),
     );
@@ -76,8 +76,6 @@ describe('app', () => {
   test('shows baton page if authenticated', async () => {
     const server = setupServer(
       rest.get('http://localhost:3000/isLoggedIn', async (_, res, ctx) =>
-        // Basically, make this endpoint hang for 10 seconds, so that the test
-        // has ample time to confirm that the loading page is being shown.
         res(ctx.status(200)),
       ),
       // For when we end up loading the baton main page. Testing of its contents

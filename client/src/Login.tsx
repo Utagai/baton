@@ -1,47 +1,28 @@
 import React from 'react';
 
 import './index.css';
+import { BackendClient } from './BackendClient';
 import { success, error } from './Notify';
 
-type UserCredentials = { username: string; password: string };
-
-// TODO: Use backendclient here?
-async function login(creds: UserCredentials): Promise<any> {
-  return fetch('/login', {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: {
-      Accept: 'application/json, text/plain, */*',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(creds),
-  })
-    .then((resp) => Promise.all([resp.json(), Promise.resolve(resp.status)]))
-    .then(([json, statusCode]: [any, number]) => {
-      if (statusCode !== 200) {
-        return Promise.reject(json);
-      }
-      return Promise.resolve(json);
-    });
-}
-
-function Login(props: { onSuccessfulLogin: () => void }) {
+function Login(props: {
+  backendClient: BackendClient;
+  onSuccessfulLogin: () => void;
+}) {
   const [username, setUsername] = React.useState<string>('');
   const [password, setPassword] = React.useState<string>('');
 
-  const { onSuccessfulLogin } = props;
+  const { backendClient, onSuccessfulLogin } = props;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login({
-      username,
-      password,
-    })
-      .then(() => {
-        onSuccessfulLogin();
-        // I think it looks better as 'user'. Could probably just do { username }
-        // too.
-        success('logged in successfully', { user: username });
+    backendClient
+      .login(username, password)
+      .then((resp) => {
+        if (resp.json.loginSuccessful) {
+          onSuccessfulLogin();
+          return success('logged in successfully', { username });
+        }
+        return Promise.reject(resp.json);
       })
       .catch((err) => {
         error('failed to login', err);

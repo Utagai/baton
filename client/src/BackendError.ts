@@ -1,5 +1,5 @@
 class BackendError extends Error {
-  respJSON: any;
+  resp: any;
 
   constructor(json: any) {
     super(JSON.stringify(json));
@@ -7,11 +7,11 @@ class BackendError extends Error {
     // Set the prototype explicitly.
     Object.setPrototypeOf(this, BackendError.prototype);
 
-    this.respJSON = json;
+    this.resp = json;
   }
 
-  responseJSON(): any {
-    return this.respJSON;
+  responseJSON(): string {
+    return JSON.stringify(this.resp, null, 2);
   }
 }
 
