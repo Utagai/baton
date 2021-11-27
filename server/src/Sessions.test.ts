@@ -8,16 +8,16 @@
 // search, but you're free to feel brave.
 
 import request from 'supertest';
-import dotenv from 'dotenv';
 
 import {
+  setUpEnv,
   getTestApp,
   testUsername,
   testPlaintextPassword,
   addTestUserToDB,
 } from './TestHelpers';
 
-dotenv.config();
+setUpEnv();
 
 describe('login session', () => {
   async function loginToApp(agent: request.SuperAgentTest) {

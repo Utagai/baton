@@ -3,12 +3,12 @@ import path from 'path';
 import request from 'supertest';
 import pino from 'pino';
 import { addDays } from 'date-fns';
-import dotenv from 'dotenv';
 
 import Environment from './Environment';
 import FileMetadata from './FileMetadata';
 import AppFactory from './AppFactory';
 import {
+  setUpEnv,
   testLogLevel,
   testUploadPath,
   testDefaultFileLifetime,
@@ -21,9 +21,9 @@ import {
   addTestUserToDB,
 } from './TestHelpers';
 
-jest.mock('./LoggedInCheck');
+setUpEnv();
 
-dotenv.config();
+jest.mock('./LoggedInCheck');
 
 // Run the clean-up _before_ the tests run, so that on failure, we still have
 // the leftover data in SQLite + disk for debugging purposes.
@@ -213,7 +213,7 @@ describe('upload', () => {
       deleteExpiredFiles: () => 0,
     };
     const app = AppFactory(
-      Environment.Development,
+      Environment.Testing,
       logger,
       getTestUsersDB(currentTestName),
       mockedFilesDB,

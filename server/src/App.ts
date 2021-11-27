@@ -1,13 +1,11 @@
 import pino from 'pino';
-import dotenv from 'dotenv';
 import process from 'process';
+import dotenv from 'dotenv';
 
-import Environment from './Environment';
+import Environment, { nodeEnvToEnvironment } from './Environment';
 import { SQLiteUsersDB } from './UsersDB';
 import { SQLiteFilesDB } from './FilesDB';
 import AppFactory from './AppFactory';
-
-dotenv.config();
 
 // TODO: These things should be configurable. Environment variables are probably
 // sufficient for all of these, since there aren't many of them.
@@ -18,10 +16,21 @@ const filesDB = new SQLiteFilesDB('./sqlite/baton_dev.db');
 const fileUploadPath = './uploaded/';
 const defaultFileLifetimeInDays = 7;
 const port = 8080;
-const env =
-  process.env.NODE_ENV === 'production'
-    ? Environment.Production
-    : Environment.Development;
+const env: Environment = nodeEnvToEnvironment();
+
+switch (env as Environment) {
+  case Environment.Development:
+    dotenv.config({ path: './.env.development' });
+    break;
+  case Environment.Production:
+    dotenv.config();
+    break;
+  case Environment.Testing:
+    dotenv.config({ path: './.env.testing' });
+    break;
+  default:
+    throw Error(`unrecognized environment: ${env}`);
+}
 
 const app = AppFactory(
   env,

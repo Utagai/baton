@@ -1,5 +1,7 @@
-import { addDays, formatDuration, intervalToDuration } from 'date-fns';
+import { addDays, format, formatDuration, intervalToDuration } from 'date-fns';
 import { render, within } from '@testing-library/react';
+
+import { BackendClient } from './BackendClient';
 import FileRow from './FileRow';
 
 describe('FileRow', () => {
@@ -16,7 +18,11 @@ describe('FileRow', () => {
 
     const tbody = document.createElement('tbody');
     const { container } = render(
-      <FileRow metadata={expectedFile} deleteMetadataFromState={() => {}} />,
+      <FileRow
+        backendClient={new BackendClient('http://blah')}
+        metadata={expectedFile}
+        deleteMetadataFromState={() => {}}
+      />,
       {
         container: document.body.appendChild(tbody),
       },
@@ -28,7 +34,9 @@ describe('FileRow', () => {
     expect(within(container).getByText(expectedFile.name)).toBeInTheDocument();
     expect(within(container).getByText('(3.03 kB)')).toBeInTheDocument();
     expect(
-      within(container).getByText('November 6th, 6:57 PM'),
+      within(container).getByText(
+        format(Date.parse(expectedFile.uploadTime), 'MMMM do, p'),
+      ),
     ).toBeInTheDocument();
     expect(
       within(container).getByText(
