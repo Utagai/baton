@@ -158,7 +158,7 @@ const Routes = {
   isLoggedIn: (): express.RequestHandler => (_, res) => {
     // Due to our login-checking middleware, this code will only ever be
     // executed if the user is already logged in, so simply return 200.
-    res.sendStatus(200);
+    res.send({});
   },
 };
 

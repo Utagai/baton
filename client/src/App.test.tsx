@@ -26,7 +26,7 @@ describe('app', () => {
         await sleep(isLoggedInBlockTimeMs);
 
         returnedFromIsLoggedIn = true;
-        return res(ctx.status(200));
+        return res(ctx.status(200), ctx.json({}));
       }),
       // For the case where we end up loading the baton main page. Testing of
       // its contents is done elsewhere, so we just return the empty array for
@@ -59,7 +59,7 @@ describe('app', () => {
   test('shows login screen if unauthenticated', async () => {
     const server = setupServer(
       rest.get('http://localhost:3000/isLoggedIn', async (_, res, ctx) =>
-        res(ctx.status(403)),
+        res(ctx.status(403), ctx.json({hi: 'this is a test failure'})),
       ),
     );
 
@@ -76,7 +76,7 @@ describe('app', () => {
   test('shows baton page if authenticated', async () => {
     const server = setupServer(
       rest.get('http://localhost:3000/isLoggedIn', async (_, res, ctx) =>
-        res(ctx.status(200)),
+        res(ctx.status(200), ctx.json({})),
       ),
       // For when we end up loading the baton main page. Testing of its contents
       // is done elsewhere, so we just return the empty array for simplicity.

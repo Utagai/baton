@@ -3,6 +3,7 @@ import FileMetadata from './FileMetadata';
 
 export type BackendResponse<T> = {
   json: T;
+  // TODO: We don't need this code, I don't think.
   statusCode: number;
 };
 
@@ -71,6 +72,13 @@ export class BackendClient {
       },
     ).then((resp) => ({
       json: { loginSuccessful: resp.statusCode === 200 },
+      statusCode: resp.statusCode,
+    }));
+  }
+
+  async isLoggedIn(): Promise<BackendResponse<{ isLoggedIn: boolean }>> {
+    return this.wrappedFetch('isLoggedIn', 'GET').then((resp) => ({
+      json: { isLoggedIn: resp.statusCode === 200 },
       statusCode: resp.statusCode,
     }));
   }

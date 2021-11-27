@@ -16,23 +16,25 @@ enum AuthState {
 // cookies are HTTP-only, so we can't actually view them from here. We could
 // disable the HTTP-only setting, but it is less secure, so we're paying the
 // cost of an extra API call instead.
-async function fetchAuthState(): Promise<AuthState> {
+async function fetchAuthState(
+  backendClient: BackendClient,
+): Promise<AuthState> {
   // LMAO. OK, listen, I'm really proud of my 'Loading' animation and I will not
   // have it be unseen!!!
   // await new Promise((resolve) => setTimeout(resolve, 5000));
-  return fetch('http://localhost:3000/isLoggedIn')
+  return backendClient
+    .isLoggedIn()
     .then((resp) => {
-      if (resp.status === 200) {
+      if (resp.json.isLoggedIn) {
         return AuthState.Authenticated;
       }
       return AuthState.Unauthenticated;
     })
-    .catch((err) => {
-      /* istanbul ignore next */
-      console.log('failed to determine session state: ', err);
-      /* istanbul ignore next */
-      return AuthState.Unauthenticated;
-    });
+    .catch(
+      (_) =>
+        /* istanbul ignore next */
+        AuthState.Unauthenticated,
+    );
 }
 
 const App = () => {
@@ -45,7 +47,9 @@ const App = () => {
   // TODO: We should expkain this.
   switch (authState) {
     case AuthState.Unknown:
-      fetchAuthState().then((innerAuthState) => setAuthState(innerAuthState));
+      fetchAuthState(backendClient).then((innerAuthState) =>
+        setAuthState(innerAuthState),
+      );
       return <Loading />;
     case AuthState.Unauthenticated: {
       return (
