@@ -3,6 +3,7 @@
 //
 import pino from 'pino';
 
+import Environment from './Environment';
 import { SQLiteUsersDB } from './UsersDB';
 import { SQLiteFilesDB } from './FilesDB';
 import AppFactory from './AppFactory';
@@ -43,6 +44,7 @@ export function getTestApp(currentTestName: string) {
   const fileUploadPath = testUploadPath;
   const defaultFileLifetimeInDays = testDefaultFileLifetime;
   return AppFactory(
+    Environment.Development,
     logger,
     usersDB,
     filesDB,

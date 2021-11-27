@@ -5,6 +5,7 @@ import pino from 'pino';
 import { addDays } from 'date-fns';
 import dotenv from 'dotenv';
 
+import Environment from './Environment';
 import FileMetadata from './FileMetadata';
 import AppFactory from './AppFactory';
 import {
@@ -212,6 +213,7 @@ describe('upload', () => {
       deleteExpiredFiles: () => 0,
     };
     const app = AppFactory(
+      Environment.Development,
       logger,
       getTestUsersDB(currentTestName),
       mockedFilesDB,

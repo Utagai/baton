@@ -1,6 +1,8 @@
 import pino from 'pino';
 import dotenv from 'dotenv';
+import process from 'process';
 
+import Environment from './Environment';
 import { SQLiteUsersDB } from './UsersDB';
 import { SQLiteFilesDB } from './FilesDB';
 import AppFactory from './AppFactory';
@@ -16,8 +18,13 @@ const filesDB = new SQLiteFilesDB('./sqlite/baton_dev.db');
 const fileUploadPath = './uploaded/';
 const defaultFileLifetimeInDays = 7;
 const port = 8080;
+const env =
+  process.env.NODE_ENV === 'production'
+    ? Environment.Production
+    : Environment.Development;
 
 const app = AppFactory(
+  env,
   logger,
   usersDB,
   filesDB,

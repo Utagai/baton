@@ -2,7 +2,9 @@ import express from 'express';
 import fileUpload from 'express-fileupload';
 import pino from 'pino';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 
+import Environment from './Environment';
 import Routes from './Routes';
 import { UsersDB } from './UsersDB';
 import { FilesDB } from './FilesDB';
@@ -32,6 +34,7 @@ function setLoginRequiredRoutes(
 // relatively clean, and most importantly, lets our tests create express apps on
 // the fly.
 function AppFactory(
+  env: Environment,
   logger: pino.Logger,
   usersDB: UsersDB,
   filesDB: FilesDB,
@@ -45,17 +48,30 @@ function AppFactory(
   app.use(cookieParser());
   // Middleware for logging each request that comes in.
   app.use(logRequests(logger));
-  // Middleware for only ever returning application/json by default.
+  // If we are in production, we should be hooking up the static build files
+  // from our React app to be served on root.
+  if (env === Environment.Production) {
+    app.use(express.static(path.join(__dirname, '..', 'build')));
+
+    // This endpoint does not need the user to be logged in, since this is what
+    // loads the app (inlcuding /login) to begin with.
+    // Furthermore, this returns an actual file/page, so it should be set before
+    // we set the content type to application/json by default.
+    app.get('/', Routes.index());
+  }
+
+  // Middleware for only ever returning application/json by default for all
+  // remaining endpoints.
   app.use((_req, res, next) => {
     res.contentType('application/json');
     next();
   });
 
-  // Define this first, before setting the loggedInCheck middleware, since we
+  // Define this before loggedinCheck, before setting the loggedInCheck middleware, since we
   // obviously cannot require login to use the /login endpoint (chicken & egg).
   app.post('/login', Routes.login(usersDB));
-
   app.use(loggedInCheck);
+
   app.use(logErroredRequests(logger));
 
   setLoginRequiredRoutes(app, filesDB, fileUploadPath, fileLifetimeInDays);

@@ -15,6 +15,10 @@ function sendErr(res: express.Response, msg: string, details?: Error | object) {
 }
 
 const Routes = {
+  // Returns the React app.
+  index: (): express.RequestHandler => (_, res) => {
+    res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
+  },
   // Returns a listing of all the files, _including_ expired files.
   files:
     (filesDB: FilesDB): express.RequestHandler =>
