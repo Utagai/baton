@@ -10,8 +10,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  test-server:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +20,20 @@ jobs:
       with:
         node-version: '14.18.1'
         cache: 'npm'
+        cache-dependency-path: './server/package-lock.json'
+    - run: |
+        npm run ci --prefix server/
+        
+  test-client:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 14.18.1
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14.18.1'
+        cache: 'npm'
+        cache-dependency-path: './client/package-lock.json'
     - run: |
         npm run ci --prefix client/
-        npm run ci --prefix server/
