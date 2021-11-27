@@ -6,3 +6,4 @@ uploaded-test/
 sqlite/
 coverage/
 .env
+build/
