@@ -2,6 +2,8 @@
 // directory for cleanliness. And then removing the Test prefix from this file.
 //
 import pino from 'pino';
+import dotenv from 'dotenv';
+import path from 'path';
 
 import Environment from './Environment';
 import { SQLiteUsersDB } from './UsersDB';
@@ -13,6 +15,10 @@ export const testLogLevel = 'debug';
 export const testSQLiteDBFile = './sqlite/baton_test.db';
 export const testUploadPath = './uploaded-test/';
 export const testDefaultFileLifetime = 1;
+
+export function setUpEnv() {
+  dotenv.config({ path: path.join(__dirname, '..', '.env.testing') });
+}
 
 export function getTestTableName(prefix: string, currentTestName: string) {
   return `${prefix}_${currentTestName.replace(/ /g, '_')}`;
