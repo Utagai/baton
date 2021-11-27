@@ -42,7 +42,13 @@ const App = () => {
     AuthState.Unknown,
   );
 
-  const backendClient = new BackendClient('http://localhost:3000');
+  const backendClient = new BackendClient(
+    `${
+      process.env.REACT_APP_BACKEND_API_HOSTNAME
+        ? process.env.REACT_APP_BACKEND_API_HOSTNAME
+        : 'http://localhost:3000'
+    }`,
+  );
 
   // TODO: We should expkain this.
   switch (authState) {
