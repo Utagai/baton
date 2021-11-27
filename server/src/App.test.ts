@@ -23,7 +23,9 @@ import {
 
 jest.mock('./LoggedInCheck');
 
-dotenv.config();
+dotenv.config({
+  path: './.env.testing',
+});
 
 // Run the clean-up _before_ the tests run, so that on failure, we still have
 // the leftover data in SQLite + disk for debugging purposes.
