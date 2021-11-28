@@ -1,6 +1,6 @@
 import 'process';
 
-import { createPasswordHash } from '../src/Password';
+import { createPasswordHashInfo } from '../src/Password';
 import { SQLiteUsersDB } from '../src/UsersDB';
 
 // Just some sloppy validation...
@@ -23,7 +23,7 @@ console.log(
   )} @ ${sqliteDBFilepath}`,
 );
 
-const passwordHashInfo = createPasswordHash(plaintextPassword);
+const passwordHashInfo = createPasswordHashInfo(plaintextPassword);
 
 const usersDB = new SQLiteUsersDB(sqliteDBFilepath, 'users');
 
