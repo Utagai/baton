@@ -22,7 +22,8 @@ export function logRequests(
           params: req.params,
           headers: req.headers,
           remoteAddr: req.ip,
-          body: req.body,
+          // TODO: Maybe we should be logging request body here but being
+          // smarter about when to redact it?
         },
         res: {
           statusCode: res.statusCode,
