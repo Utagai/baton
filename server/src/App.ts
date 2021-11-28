@@ -8,6 +8,8 @@ import { SQLiteFilesDB } from './FilesDB';
 import AppFactory from './AppFactory';
 
 // TODO: This is not currently set in the environment.
+// TODO: The logs are really hard to read in the production journal... anything
+// we can do to improve that? Perhaps logging pretty would actually be OK?
 const logger = pino({ level: process.env.LOG_LEVEL || 'debug' });
 // TODO: We should be getting these from the environment as well...
 const usersDB = new SQLiteUsersDB('./sqlite/baton_dev.db');

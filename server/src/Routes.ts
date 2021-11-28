@@ -72,6 +72,7 @@ const Routes = {
             res.send(file);
           })
           .catch((err) => {
+            // TODO: This error seems to not be logged?
             sendErr(res, `failed to upload files`, err);
           });
       } else {
@@ -143,6 +144,9 @@ const Routes = {
         body: { username, password: plaintextPassword },
       } = req;
 
+      // TODO: Something in this endpoint seems to fail if we start with a fresh
+      // sqlite file and run adduser on the remote machine... Maybe we can repro
+      // this locally?
       const user = usersDB.getUser(username);
 
       if (
