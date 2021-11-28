@@ -13,6 +13,9 @@ import AppFactory from './AppFactory';
 const logger = pino({ level: process.env.LOG_LEVEL || 'debug' });
 const usersDB = new SQLiteUsersDB('./sqlite/baton_dev.db');
 const filesDB = new SQLiteFilesDB('./sqlite/baton_dev.db');
+// TODO: We should be more intelligent about where to store the files, because
+// right now re-deploys delete pre-existing files. Not the worst thing in the
+// world for an _ephemeral_ file storage service, but could be better.
 const fileUploadPath = './uploaded/';
 const defaultFileLifetimeInDays = 7;
 const env: Environment = nodeEnvToEnvironment();
@@ -22,7 +25,7 @@ switch (env as Environment) {
     dotenv.config({ path: './.env.development' });
     break;
   case Environment.Production:
-    dotenv.config();
+    dotenv.config({ path: './.env.production' });
     break;
   case Environment.Testing:
     dotenv.config({ path: './.env.testing' });
