@@ -7,16 +7,16 @@ import { SQLiteUsersDB } from './UsersDB';
 import { SQLiteFilesDB } from './FilesDB';
 import AppFactory from './AppFactory';
 
-// TODO: These things should be configurable. Environment variables are probably
-// sufficient for all of these, since there aren't many of them.
-// TODO: Should we try to make the logger stay in pretty mode?
+// TODO: This is not currently set in the environment.
 const logger = pino({ level: process.env.LOG_LEVEL || 'debug' });
+// TODO: We should be getting these from the environment as well...
 const usersDB = new SQLiteUsersDB('./sqlite/baton_dev.db');
 const filesDB = new SQLiteFilesDB('./sqlite/baton_dev.db');
 // TODO: We should be more intelligent about where to store the files, because
 // right now re-deploys delete pre-existing files. Not the worst thing in the
 // world for an _ephemeral_ file storage service, but could be better.
 const fileUploadPath = './uploaded/';
+// TODO: Ditto environment...
 const defaultFileLifetimeInDays = 7;
 const env: Environment = nodeEnvToEnvironment();
 

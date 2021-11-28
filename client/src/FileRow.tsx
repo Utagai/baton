@@ -11,7 +11,7 @@ import { error, loading, success } from './Notify';
 // This function won't be something we can test in jest, we'd need true E2E
 // testing for it.
 /* istanbul ignore next */
-function triggerDownload(id: string, filename: string) {
+function triggerDownload(hostname: string, id: string, filename: string) {
   loading('triggering download', { filename });
   // This is so hacky but this seems to be the nicest way to do it...
   // window.open() seems nicer but it can trigger pop-up blockers and such (and
@@ -19,7 +19,7 @@ function triggerDownload(id: string, filename: string) {
   // gives a more seamless experience.
   // TODO: On top of this already hacky business, we are hardcoding the
   // host/port of the backend.
-  const url = `http://localhost:8080/download/${id}`;
+  const url = `${hostname}/download/${id}`;
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
@@ -95,7 +95,7 @@ function fileRowButtonsElem(
           // This function won't be something we can test in jest, we'd need true E2E
           // testing for it.
           /* istanbul ignore next */
-          triggerDownload(fileId, name);
+          triggerDownload(backendClient.host, fileId, name);
         }}
       >
         💾 Download

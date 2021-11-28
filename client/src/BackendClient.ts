@@ -8,6 +8,7 @@ export type BackendResponse<T> = {
 };
 
 export class BackendClient {
+  // TODO: Rename this to 'hostname' for consistency.
   host: string;
 
   constructor(host: string) {
