@@ -15,7 +15,6 @@ const usersDB = new SQLiteUsersDB('./sqlite/baton_dev.db');
 const filesDB = new SQLiteFilesDB('./sqlite/baton_dev.db');
 const fileUploadPath = './uploaded/';
 const defaultFileLifetimeInDays = 7;
-const port = 8080;
 const env: Environment = nodeEnvToEnvironment();
 
 switch (env as Environment) {
@@ -32,6 +31,13 @@ switch (env as Environment) {
     throw Error(`unrecognized environment: ${env}`);
 }
 
+const hostname = process.env.BATON_HOSTNAME
+  ? process.env.BATON_HOSTNAME
+  : 'http://localhost';
+const port = process.env.BATON_PORT
+  ? parseInt(process.env.BATON_PORT, 10)
+  : 8080;
+
 const app = AppFactory(
   env,
   logger,
@@ -42,6 +48,6 @@ const app = AppFactory(
 );
 
 // Starts the express server.
-app.listen(port, () => {
+app.listen(port, hostname, () => {
   logger.info(`server started at http://localhost:${port}`);
 });
