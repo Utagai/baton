@@ -21,6 +21,8 @@ async function fetchAuthState(
 ): Promise<AuthState> {
   // LMAO. OK, listen, I'm really proud of my 'Loading' animation and I will not
   // have it be unseen!!!
+  // TODO: Probably disable this during development, and enable it in
+  // production. :D
   // await new Promise((resolve) => setTimeout(resolve, 5000));
   return backendClient
     .isLoggedIn()
