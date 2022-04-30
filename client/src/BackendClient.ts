@@ -48,15 +48,15 @@ export class BackendClient {
   }
 
   async getMetadatas(): Promise<BackendResponse<{ files: FileMetadata[] }>> {
-    return this.wrappedFetch('/files', 'GET');
+    return this.wrappedFetch('files', 'GET');
   }
 
   async upload(fileData: FormData): Promise<BackendResponse<FileMetadata>> {
-    return this.wrappedFetch('/upload', 'POST', fileData);
+    return this.wrappedFetch('upload', 'POST', fileData);
   }
 
   async delete(id: string): Promise<BackendResponse<{ id: string }>> {
-    return this.wrappedFetch(`/delete/${id}`, 'DELETE');
+    return this.wrappedFetch(`delete/${id}`, 'DELETE');
   }
 
   async login(
@@ -64,7 +64,7 @@ export class BackendClient {
     plaintextPassword: string,
   ): Promise<BackendResponse<{ loginSuccessful: boolean }>> {
     return this.wrappedFetch(
-      '/login',
+      'login',
       'POST',
       JSON.stringify({ username, password: plaintextPassword }),
       {

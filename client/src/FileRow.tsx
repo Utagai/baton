@@ -19,7 +19,7 @@ function triggerDownload(hostname: string, id: string, filename: string) {
   // gives a more seamless experience.
   // TODO: On top of this already hacky business, we are hardcoding the
   // host/port of the backend.
-  const url = new URL(`/download/${id}`, hostname).href;
+  const url = new URL(`download/${id}`, hostname).href;
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
