@@ -38,7 +38,7 @@ switch (env as Environment) {
 
 const hostname = process.env.BATON_HOSTNAME
   ? process.env.BATON_HOSTNAME
-  : 'http://localhost';
+  : 'localhost';
 const port = process.env.BATON_PORT
   ? parseInt(process.env.BATON_PORT, 10)
   : 8080;
