@@ -9,3 +9,4 @@ coverage/
 .env.production
 .env.development
 build/
+.log/
